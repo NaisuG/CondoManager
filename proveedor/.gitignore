@@ -32,33 +32,5 @@ build/
 ### VS Code ###
 .vscode/
 
-### LOGS & CRASHES DE JAVA ###
-*.log
-hs_err_pid*
-replay_pid*
-
-###
-.env
-*.env
-application-secret.properties
-application-dev.properties
-*.pem
-*.key
-
-### SISTEMAS OPERATIVOS###
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-Desktop.ini
-
-### DOCKER###
-/docker-data/
-/postgres-data/
-/pgdata/
-
 **/target/
 *.jar

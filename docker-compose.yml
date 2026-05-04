@@ -1,26 +1,52 @@
+version: '3.8'
+
 services:
-  app-registro:
-    build: ./registro
-    container_name: registro-service
+  # ------------------------------------
+  # BASES DE DATOS
+  # ------------------------------------
+  postgres-mantenimiento:
+    image: postgres:15-alpine
+    container_name: db_mantenimiento
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: mantenimiento_db
     ports:
-      - "8091:8091"
+      - "5432:5432"
+    restart: always
+
+  db-proveedor:
+    image: postgres:15-alpine
+    container_name: db_proveedor
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://db-pawville:5432/bd
-      - SPRING_DATASOURCE_USERNAME=pawville
-      - SPRING_DATASOURCE_PASSWORD=pawville123
-    networks:
-      - pawville-red
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: proveedor_db
+    ports:
+      - "5433:5432"
+    restart: always
 
-  db:
-    image: postgre
-    container_name: tienda-db
+  # ------------------------------------
+  # MICROSERVICIOS (SPRING BOOT)
+  # ------------------------------------
+  app-mantenimiento:
+    build: ./mantenimiento
+    container_name: ms_mantenimiento
+    ports:
+      - "8080:8080"
     environment:
-    volumes:
-      - dbdata:/var/lib/mysql
-      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-mantenimiento:5432/mantenimiento_db
+      - PROVEEDOR_URL=http://app-proveedor:8081/api/proveedores
+    depends_on:
+      - postgres-mantenimiento
 
-
-networks:
-  condominio-red:
-    external: true
-    name: condominio-bridge
+  app-proveedor:
+    build: ./proveedor
+    container_name: ms_proveedor
+    ports:
+      - "8081:8081"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db-proveedor:5432/proveedor_db
+      - SERVER_PORT=8081
+    depends_on:
+      - db-proveedorx
