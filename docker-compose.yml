@@ -49,4 +49,4 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db-proveedor:5432/proveedor_db
       - SERVER_PORT=8081
     depends_on:
-      - db-proveedorx
+      - db-proveedor
