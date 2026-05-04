@@ -1,0 +1,26 @@
+services:
+  app-registro:
+    build: ./registro
+    container_name: registro-service
+    ports:
+      - "8091:8091"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db-pawville:5432/bd
+      - SPRING_DATASOURCE_USERNAME=pawville
+      - SPRING_DATASOURCE_PASSWORD=pawville123
+    networks:
+      - pawville-red
+
+  db:
+    image: postgre
+    container_name: tienda-db
+    environment:
+    volumes:
+      - dbdata:/var/lib/mysql
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+
+networks:
+  condominio-red:
+    external: true
+    name: condominio-bridge
