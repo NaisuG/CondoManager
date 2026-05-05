@@ -1,27 +1,32 @@
 package condominio.registro.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
+import java.util.List;
 
 @Entity
-@AllArgsConstructor
+@Table(name = "RESIDENTE")
+@Getter
+@Setter
 @NoArgsConstructor
-@Data
-@Table(name="Residentes")
-
+@AllArgsConstructor
+@Builder
 public class Residente {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
-    @Column (nullable=false)
-    private String nombre;
-    @Column (nullable=false)
-    private int run;
-    @Column (nullable=false)
-    private String cod_verificador;
-    @Column (nullable=false)
-    private String email;
+    private Long id;
 
+    @Column(unique = true, nullable = false)
+    private String run;
+
+    @Column(nullable = false)
+    private String nombre;
+
+    @Column(unique = true, nullable = false)
+    private String correo;
+
+    @OneToMany(mappedBy = "residente", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<ResidenteUnidad> unidades;
 }
