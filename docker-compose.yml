@@ -26,6 +26,17 @@ services:
       - "5433:5432"
     restart: always
 
+  db-registro:
+    image: postgres:15-alpine
+    container_name: db_registro
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: registro_db
+    ports:
+      - "5434:5432"
+    restart: always
+
   # ------------------------------------
   # MICROSERVICIOS (SPRING BOOT)
   # ------------------------------------
@@ -50,3 +61,16 @@ services:
       - SERVER_PORT=8081
     depends_on:
       - db-proveedor
+
+  app-registro:
+    build: ./registro
+    container_name: ms_registro
+    ports:
+      - "8082:8082"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db-registro:5432/registro_db
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=admin
+      - SERVER_PORT=8082
+    depends_on:
+      - db-registro
