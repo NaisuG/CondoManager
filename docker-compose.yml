@@ -7,6 +7,8 @@ services:
   postgres-mantenimiento:
     image: postgres:15-alpine
     container_name: db_mantenimiento
+    networks:
+      - app-network
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: admin
@@ -18,6 +20,8 @@ services:
   db-proveedor:
     image: postgres:15-alpine
     container_name: db_proveedor
+    networks:
+      - app-network
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: admin
@@ -29,6 +33,8 @@ services:
   db-registro:
     image: postgres:15-alpine
     container_name: db_registro
+    networks:
+      - app-network
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: admin
@@ -43,6 +49,8 @@ services:
   app-mantenimiento:
     build: ./mantenimiento
     container_name: ms_mantenimiento
+    networks:
+      - app-network
     ports:
       - "8080:8080"
     environment:
@@ -54,6 +62,8 @@ services:
   app-proveedor:
     build: ./proveedor
     container_name: ms_proveedor
+    networks:
+      - app-network
     ports:
       - "8081:8081"
     environment:
@@ -65,6 +75,8 @@ services:
   app-registro:
     build: ./registro
     container_name: ms_registro
+    networks:
+      - app-network
     ports:
       - "8082:8082"
     environment:
@@ -74,3 +86,26 @@ services:
       - SERVER_PORT=8082
     depends_on:
       - db-registro
+
+
+  app-bff:
+    build: ./backend-for-front
+    container_name: ms_bff
+    networks:
+      - app-network
+    ports:
+      - "9000:9000"
+    environment:
+      #nombres de los servicios definidos arriba
+      - URL_MANTENIMIENTO=http://ms_mantenimiento:8080
+      - URL_PROVEEDOR=http://ms_proveedor:8081
+      - URL_REGISTRO=http://ms_registro:8082
+    depends_on:
+      - app-mantenimiento
+      - app-proveedor
+      - app-registro
+
+  # --- RED ---
+networks:
+  app-network:
+    driver: bridge

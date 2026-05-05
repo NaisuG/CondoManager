@@ -12,35 +12,33 @@
         </processorPath>
         <module name="mantenimiento" />
       </profile>
-      <profile name="Gradle Imported" enabled="true">
-        <outputRelativeToContentRoot value="true" />
-        <processorPath useClasspath="false">
-          <entry name="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.projectlombok/lombok/1.18.44/503fd0b002dbb237fa4656cf4b8021666a8aebac/lombok-1.18.44.jar" />
-        </processorPath>
-      </profile>
       <profile name="Maven default annotation processors profile" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="registro" />
       </profile>
-      <profile name="Annotation profile for proveedor" enabled="true">
+      <profile name="Annotation profile for backend-for-front" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="false">
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.46/lombok-1.18.46.jar" />
         </processorPath>
+        <module name="backend-for-front" />
         <module name="proveedor" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="BFF" target="17" />
       <module name="registro.main" target="17" />
       <module name="registro.test" target="17" />
     </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="BFF" options="-parameters" />
+      <module name="backend-for-front" options="-parameters" />
       <module name="mantenimiento" options="-parameters" />
       <module name="proveedor" options="-parameters" />
       <module name="registro" options="-parameters" />
