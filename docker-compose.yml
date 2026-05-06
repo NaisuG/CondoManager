@@ -86,7 +86,16 @@ services:
       - SERVER_PORT=8082
     depends_on:
       - db-registro
-
+  
+  app-frontend:
+    build: ./Frontend
+    container_name: ui_frontend
+    networks:
+      - app-network
+    ports:
+      - "3000:80"
+    depends_on:
+      - app-bff
 
   app-bff:
     build: ./backend-for-front
@@ -97,9 +106,9 @@ services:
       - "9000:9000"
     environment:
       #nombres de los servicios definidos arriba
-      - URL_MANTENIMIENTO=http://ms_mantenimiento:8080
-      - URL_PROVEEDOR=http://ms_proveedor:8081
-      - URL_REGISTRO=http://ms_registro:8082
+      - URL_MANTENIMIENTO=http://app-mantenimiento:8080
+      - URL_PROVEEDOR=http://app-proveedor:8081
+      - URL_REGISTRO=http://app-registro:8082
     depends_on:
       - app-mantenimiento
       - app-proveedor
