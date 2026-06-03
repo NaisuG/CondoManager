@@ -2,6 +2,9 @@ package condominio.backendforfront.controller;
 
 import condominio.backendforfront.dto.*;
 import condominio.backendforfront.service.BffService;
+
+import java.util.Map;
+
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -24,5 +27,16 @@ public class BffController {
     @GetMapping("/registro/condominio/{id}")
     public Mono<CondominioFullDTO> getCondominio(@PathVariable Long id) {
         return bffService.obtenerCondominioCompleto(id);
+    }
+
+    @GetMapping("/registro/estadisticas/unidades")
+    public Mono<Map> getEstadisticasUnidades() {
+        return bffService.obtenerEstadisticasUnidades();
+ 
+    }
+
+    @GetMapping("/registro/condominios")
+    public Flux<CondominioFullDTO> getCondominios() {
+        return bffService.listarCondominios();
     }
 }
