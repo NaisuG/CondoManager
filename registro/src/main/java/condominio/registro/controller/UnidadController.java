@@ -9,11 +9,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
+@CrossOrigin(origins = "*")
 @RequestMapping("/api/unidades")
 @RequiredArgsConstructor
-public class UnidadController {
+public class UnidadController  {
 
     private final UnidadService unidadService;
 
@@ -47,5 +49,10 @@ public class UnidadController {
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         unidadService.eliminar(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/estadisticas")
+    public ResponseEntity<Map<String, Long>> estadisticasUnidades() {
+        return ResponseEntity.ok(unidadService.obtenerEstadisticasUnidades());
     }
 }

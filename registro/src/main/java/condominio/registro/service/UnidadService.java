@@ -15,6 +15,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -99,5 +101,15 @@ public class UnidadService {
                 .tipoNombre(u.getTipo().getNombre())
                 .m2(u.getM2())
                 .build();
+    }
+
+    public Map<String, Long> obtenerEstadisticasUnidades() {
+        List<Object[]> resultados = unidadRepository.contarUnidadesPorTipo();
+        Map<String, Long> estadisticas = new HashMap<>();
+        
+        for (Object[] fila : resultados) {
+            estadisticas.put(fila[0].toString(), (Long) fila[1]);
+        }
+        return estadisticas;
     }
 }
