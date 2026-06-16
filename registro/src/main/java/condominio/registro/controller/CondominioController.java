@@ -23,6 +23,11 @@ public class CondominioController {
         return ResponseEntity.ok(condominioService.listarTodos());
     }
 
+    @GetMapping("/usuario/{idUsuario}")
+    public ResponseEntity<List<CondominioDTO>> listarPorUsuario(@PathVariable Long idUsuario) {
+        return ResponseEntity.ok(condominioService.listarPorUsuario(idUsuario));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<CondominioDetalleDTO> obtenerDetalle(@PathVariable Long id) {
         return ResponseEntity.ok(condominioService.obtenerDetallePorId(id));

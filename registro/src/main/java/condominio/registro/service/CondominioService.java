@@ -28,6 +28,13 @@ public class CondominioService {
                 .collect(Collectors.toList());
     }
 
+    public List<CondominioDTO> listarPorUsuario(Long idUsuario) {
+        return condominioRepository.findByIdUsuario(idUsuario)
+                .stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+    }
+
     public CondominioDetalleDTO obtenerDetallePorId(Long id) {
         Condominio c = condominioRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,

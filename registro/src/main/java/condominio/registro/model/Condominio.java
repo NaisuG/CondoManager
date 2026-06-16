@@ -18,6 +18,9 @@ public class Condominio {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "ID_USUARIO", nullable = false)
+    private Long idUsuario;
+
     @Column(nullable = false)
     private String nombre;
 

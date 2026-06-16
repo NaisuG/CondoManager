@@ -5,6 +5,7 @@ import condominio.backendforfront.service.BffService;
 
 import java.util.Map;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -32,11 +33,20 @@ public class BffController {
     @GetMapping("/registro/estadisticas/unidades")
     public Mono<Map> getEstadisticasUnidades() {
         return bffService.obtenerEstadisticasUnidades();
- 
     }
 
     @GetMapping("/registro/condominios")
     public Flux<CondominioFullDTO> getCondominios() {
         return bffService.listarCondominios();
+    }
+
+    @PostMapping("/auth/register")
+    public Mono<ResponseEntity<Map>> registrarUsuario(@RequestBody Map<String, Object> registroDto) {
+        return bffService.registrarAuth(registroDto);
+    }
+
+    @PostMapping("/auth/login")
+    public Mono<ResponseEntity<Map>> loginUsuario(@RequestBody Map<String, Object> loginDto) {
+        return bffService.loginAuth(loginDto);
     }
 }

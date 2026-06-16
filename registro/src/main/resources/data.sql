@@ -1,9 +1,9 @@
--- Condominios 
-INSERT INTO condominio (id, nombre, direccion) VALUES (1, 'Edificio Central', 'Santiago 123');
-INSERT INTO condominio (id, nombre, direccion) VALUES (2, 'Condominio Central', 'Santiago Centro 456');
+-- Condominios
+INSERT INTO condominio (id, id_usuario, nombre, direccion) VALUES (1, 1, 'Edificio Central', 'Santiago 123');
+INSERT INTO condominio (id, id_usuario, nombre, direccion) VALUES (2, 1, 'Condominio Central', 'Santiago Centro 456');
 
 
--- Tipos de Unidad 
+-- Tipos de Unidad
 INSERT INTO tipo_unidad (id, nombre) VALUES (1, 'UNIDAD TIPO A');
 INSERT INTO tipo_unidad (id, nombre) VALUES (2, 'UNIDAD TIPO B');
 
@@ -17,7 +17,7 @@ INSERT INTO torre (id, id_condominio, numero) VALUES (5, 2, 30);
 
 
 
--- Unidades 
+-- Unidades
 INSERT INTO unidad (id, id_torre, numero, id_tipo, m2) VALUES (1, 1, 101, 1, 55.5);
 INSERT INTO unidad (id, id_torre, numero, id_tipo, m2) VALUES (2, 1, 102, 2, 75.5);
 INSERT INTO unidad (id, id_torre, numero, id_tipo, m2) VALUES (3, 2, 201, 1, 60.0);
