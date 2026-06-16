@@ -1,10 +1,13 @@
 package condominio.registro.service;
 
 import condominio.registro.dto.UnidadDTO;
+import condominio.registro.dto.UnidadDetalleCompletoDTO;
 import condominio.registro.dto.UnidadRequestDTO;
+import condominio.registro.model.ResidenteUnidad;
 import condominio.registro.model.TipoUnidad;
 import condominio.registro.model.Torre;
 import condominio.registro.model.Unidad;
+import condominio.registro.repository.ResidenteUnidadRepository;
 import condominio.registro.repository.TipoUnidadRepository;
 import condominio.registro.repository.TorreRepository;
 import condominio.registro.repository.UnidadRepository;
@@ -25,6 +28,7 @@ public class UnidadService {
     private final UnidadRepository unidadRepository;
     private final TorreRepository torreRepository;
     private final TipoUnidadRepository tipoUnidadRepository;
+    private final ResidenteUnidadRepository residenteUnidadRepository;
 
     public List<UnidadDTO> listarTodas() {
         return unidadRepository.findAll()
@@ -98,6 +102,7 @@ public class UnidadService {
         return UnidadDTO.builder()
                 .id(u.getId())
                 .numero(u.getNumero())
+                .tipoId(u.getTipo().getId())
                 .tipoNombre(u.getTipo().getNombre())
                 .m2(u.getM2())
                 .build();
@@ -111,5 +116,26 @@ public class UnidadService {
             estadisticas.put(fila[0].toString(), (Long) fila[1]);
         }
         return estadisticas;
+    }
+
+    public UnidadDetalleCompletoDTO obtenerDetalleCompleto(Long id) {
+        Unidad unidad = unidadRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Unidad no encontrada con id: " + id));
+
+        String nombreInquilino = "Sin asignar";
+        
+        List<ResidenteUnidad> relaciones = residenteUnidadRepository.findByUnidadId(id);
+        if (relaciones != null && !relaciones.isEmpty()) {
+            nombreInquilino = relaciones.get(0).getResidente().getNombre();
+        }
+
+        return UnidadDetalleCompletoDTO.builder()
+                .numeroUnidad(unidad.getNumero())
+                .tipoUnidad(unidad.getTipo().getNombre())
+                .numeroTorre(unidad.getTorre().getNumero())
+                .nombreCondominio(unidad.getTorre().getCondominio().getNombre())
+                .nombreResidente(nombreInquilino)
+                .build();
     }
 }

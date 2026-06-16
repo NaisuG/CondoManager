@@ -1,10 +1,12 @@
 package com.condominio.contabilidad.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 
 import com.condominio.contabilidad.DTO.EstadisticasFinanzasDTO;
+import com.condominio.contabilidad.DTO.GenerarCobroRequestDTO;
 import com.condominio.contabilidad.Model.CobroMensual;
 import com.condominio.contabilidad.Model.EstadoCobro;
 import com.condominio.contabilidad.Repository.CobroMensualRepository;
@@ -83,5 +85,31 @@ public class ContabilidadService {
                 .cantidadPendientes(totalImpagos)
                 .tasaMorosidad(Math.round(tasaMorosidad * 100.0) / 100.0)
                 .build();
+    }
+
+    public List<CobroMensual> generarCobrosMasivos(List<GenerarCobroRequestDTO> peticiones) {
+        List<CobroMensual> nuevosCobros = new ArrayList<>();
+
+        for (GenerarCobroRequestDTO peticion : peticiones) {
+            // Validamos que no exista para no cobrar el doble
+            if (!cobroMensualRepository.existsByIdUnidadAndMesAndAnio(peticion.getIdUnidad(), peticion.getMes(), peticion.getAnio())) {
+                
+                var tarifa = valorGastoComunRepository.findByIdTipoUnidad(peticion.getIdTipoUnidad())
+                        .orElseThrow(() -> new RuntimeException("No hay tarifa para el tipo de unidad: " + peticion.getIdTipoUnidad()));
+
+                CobroMensual nuevoCobro = CobroMensual.builder()
+                        .idUnidad(peticion.getIdUnidad())
+                        .mes(peticion.getMes())
+                        .anio(peticion.getAnio())
+                        .montoCobrado(tarifa.getMonto())
+                        .estado(EstadoCobro.PENDIENTE)
+                        .build();
+
+                nuevosCobros.add(nuevoCobro);
+            }
+        }
+        
+        // Guardamos todos de un solo golpe
+        return cobroMensualRepository.saveAll(nuevosCobros);
     }
 }

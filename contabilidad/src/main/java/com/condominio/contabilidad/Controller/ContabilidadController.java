@@ -60,4 +60,9 @@ public class ContabilidadController {
     public ResponseEntity<com.condominio.contabilidad.Model.ValorGastoComun> configurarTarifa(@RequestBody TarifaRequestDTO request) {
         return ResponseEntity.ok(service.configurarTarifa(request.getIdTipoUnidad(), request.getMonto()));
     }
+
+    @PostMapping("/cobros/masivo")
+    public ResponseEntity<List<CobroMensual>> generarCobrosMasivos(@RequestBody List<GenerarCobroRequestDTO> peticiones) {
+        return ResponseEntity.ok(service.generarCobrosMasivos(peticiones));
+    }
 }

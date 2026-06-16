@@ -1,6 +1,7 @@
 package condominio.registro.controller;
 
 import condominio.registro.dto.UnidadDTO;
+import condominio.registro.dto.UnidadDetalleCompletoDTO;
 import condominio.registro.dto.UnidadRequestDTO;
 import condominio.registro.service.UnidadService;
 import lombok.RequiredArgsConstructor;
@@ -54,5 +55,10 @@ public class UnidadController  {
     @GetMapping("/estadisticas")
     public ResponseEntity<Map<String, Long>> estadisticasUnidades() {
         return ResponseEntity.ok(unidadService.obtenerEstadisticasUnidades());
+    }
+
+    @GetMapping("/{id}/detalle-completo")
+    public ResponseEntity<UnidadDetalleCompletoDTO> obtenerDetalleCompleto(@PathVariable Long id) {
+        return ResponseEntity.ok(unidadService.obtenerDetalleCompleto(id));
     }
 }

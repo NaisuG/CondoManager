@@ -4,6 +4,11 @@ import '../css/Dashboard.css';
 
 const colores = ['#9d99ca', '#fca5e2', '#dad37b', '#abe6d2', '#fd7979', '#2d8bb1', '#e9a36a'];
 
+const formatMoneda = (valor) => {
+  if (valor === null || valor === undefined) return '$0';
+  return '$' + valor.toLocaleString('es-CL');
+};
+
 //grafico dee barras radial
 function RadialChart({ labels, valores, titulo }) {
   const canvasRef = useRef(null);
@@ -125,6 +130,8 @@ export default function Dashboard() {
 
   // condominios completos
   const [condominios, setCondominios] = useState([]);
+  const [finanzas, setFinanzas] = useState(null);
+  
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -141,6 +148,18 @@ export default function Dashboard() {
         const r2 = await fetch('/api/bff/registro/condominios');
         const condos = await r2.json();
         setCondominios(condos);
+
+      // estadisticas financieras del mes actual
+        const fecha = new Date();
+        const mesActual = fecha.getMonth() + 1;
+        const anioActual = fecha.getFullYear();
+        
+        const r3 = await fetch(`/api/bff/contabilidad/estadisticas?mes=${mesActual}&anio=${anioActual}`);
+        if (r3.ok) {
+          const datosFinanzas = await r3.json();
+          setFinanzas(datosFinanzas);
+        }
+
       } catch (e) {
         setError(e.message);
       } finally {
@@ -198,6 +217,33 @@ export default function Dashboard() {
               <div className="metric-box-label">Tipo más frecuente</div>
             </div>
           </div>
+          {/* Fila 2: Resumen Financiero (Separado visualmente con un pequeño margen superior) */}
+          {finanzas && (
+            <div className="dashboard-metrics" style={{ marginTop: '20px' }}>
+              <div className="metric-box">
+                <div className="metric-box-value">{formatMoneda(finanzas.totalProyectado)}</div>
+                <div className="metric-box-label">Proyectado Mensual</div>
+              </div>
+              <div className="metric-box">
+                {/* Le damos un color verde sutil al valor recaudado para guiar visualmente */}
+                <div className="metric-box-value" style={{ color: '#68d391' }}>
+                  {formatMoneda(finanzas.totalRecaudado)}
+                </div>
+                <div className="metric-box-label">Recaudado</div>
+              </div>
+              <div className="metric-box">
+                {/* Le damos un color rojo sutil a la morosidad si es mayor a 0 */}
+                <div className="metric-box-value" style={{ color: finanzas.tasaMorosidad > 0 ? '#fc8181' : 'inherit' }}>
+                  {finanzas.tasaMorosidad}%
+                </div>
+                <div className="metric-box-label">Morosidad</div>
+              </div>
+              <div className="metric-box">
+                <div className="metric-box-value">{finanzas.cantidadPendientes}</div>
+                <div className="metric-box-label">Unidades Impagas</div>
+              </div>
+            </div>
+          )}
 
           <div className="dashboard-grid">
 

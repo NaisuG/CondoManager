@@ -39,4 +39,24 @@ public class BffController {
     public Flux<CondominioFullDTO> getCondominios() {
         return bffService.listarCondominios();
     }
+
+    @GetMapping("/contabilidad/estadisticas")
+    public Mono<Map> getEstadisticasFinanzas(@RequestParam Integer mes, @RequestParam Integer anio) {
+        return bffService.obtenerEstadisticasFinanzas(mes, anio);
+    }
+
+    @GetMapping("/contabilidad/cobros-detallados")
+    public Flux<CobroDetalleDTO> getCobrosDetallados(@RequestParam Integer mes, @RequestParam Integer anio) {
+        return bffService.listarCobrosConDetalles(mes, anio);
+    }
+
+    @PostMapping("/contabilidad/generar-mes")
+    public Mono<Object> generarCobrosMasivos(@RequestParam Integer mes, @RequestParam Integer anio) {
+        return bffService.generarCobrosMasivos(mes, anio);
+    }
+
+    @PatchMapping("/contabilidad/cobros/{id}/estado")
+    public Mono<Object> actualizarEstadoCobro(@PathVariable Long id, @RequestParam String estado) {
+        return bffService.actualizarEstadoCobro(id, estado);
+    }
 }

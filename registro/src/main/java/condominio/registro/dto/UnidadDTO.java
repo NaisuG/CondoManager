@@ -10,6 +10,7 @@ import lombok.*;
 public class UnidadDTO {
     private Long id;
     private Integer numero;
+    private Long tipoId;
     private String tipoNombre;
     private Double m2;
 }

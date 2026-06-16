@@ -3,6 +3,7 @@ import PaginaOrdenes from "./pages/Ordenes";
 import PaginaCondominio from "./pages/Condominio";
 import "./App.css";
 import PaginaDashboard from "./pages/Dashboard";
+import PaginaFinanzas from "./pages/Finanzas";
 
 export default function App() {
   const [page, setPage] = useState("dashboard");
@@ -17,6 +18,12 @@ export default function App() {
             onClick={() => setPage("dashboard")}
           >
             Dashboard
+          </span>
+          <span
+            className={`sidebar-link ${page === "finanzas" ? "active" : ""}`}
+            onClick={() => setPage("finanzas")}
+          >
+            Finanzas
           </span>
           <span
             className={`sidebar-link ${page === "ordenes" ? "active" : ""}`}
@@ -34,6 +41,7 @@ export default function App() {
       </aside>
       <main className="main">
         {page === "dashboard" && <PaginaDashboard />}
+        {page === "finanzas" && <PaginaFinanzas />}
         {page === "ordenes" && <PaginaOrdenes />}
         {page === "condo" && <PaginaCondominio />}
       </main>
