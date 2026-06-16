@@ -59,11 +59,14 @@ public class BffService {
         String urlFinal = urlRegistro + "/api/condominios/" + id;
         
         System.out.println("Llamando a Registro en: " + urlFinal);
+        System.out.println("Llamando a Registro en: " + urlFinal);
 
         return webClient.get()
                 .uri(urlFinal)
                 .retrieve()
                 .bodyToMono(CondominioFullDTO.class)
+                .doOnNext(res -> System.out.println("Datos recibidos para: " + res.getNombre()))
+                .doOnError(e -> System.err.println("Error llamando a Registro: " + e.getMessage()))
                 .doOnNext(res -> System.out.println("Datos recibidos para: " + res.getNombre()))
                 .doOnError(e -> System.err.println("Error llamando a Registro: " + e.getMessage()))
                 .onErrorResume(e -> Mono.empty());
