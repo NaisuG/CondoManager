@@ -30,6 +30,12 @@ export default function Sidebar({ pageActiva, setPage, alCerrarSesion }) {
                 >
                     Buscar Condominio
                 </button>
+                <button
+                    className={`sidebar-btn ${pageActiva === 'documentos' ? 'active' : ''}`}
+                    onClick={() => setPage('documentos')}
+                >
+                    Documentos
+                </button>
             </nav>
 
             <div className="sidebar-footer">

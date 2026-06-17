@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/bff")
@@ -98,5 +99,16 @@ public class BffController {
     @GetMapping("/documentos/{id}/descargar")
     public Mono<Map> getLinkDescarga(@PathVariable Long id) {
         return bffService.obtenerLinkDescarga(id);
+    }
+
+    @PostMapping(value = "/documentos/subir", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
+    public Mono<ResponseEntity<Map>> subirDocumento(
+            @RequestParam("archivo") MultipartFile archivo,
+            @RequestParam("idCondominio") Long idCondominio,
+            @RequestParam("idUsuarioSubio") Long idUsuarioSubio) {
+        
+        return bffService.subirDocumento(archivo, idCondominio, idUsuarioSubio)
+                .map(resultado -> ResponseEntity.ok().body(resultado))
+                .onErrorResume(e -> Mono.just(ResponseEntity.status(500).body(Map.of("error", e.getMessage()))));
     }
 }

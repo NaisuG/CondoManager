@@ -69,6 +69,18 @@ services:
       - "5436:5432"
     restart: always
 
+  db-documentos:
+    image: postgres:15-alpine
+    container_name: db_documentos
+    networks:
+      - app-network
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: documentos_db
+    ports:
+      - "5437:5432"
+    restart: always
   # ------------------------------------
   # MICROSERVICIOS (SPRING BOOT)
   # ------------------------------------
@@ -180,18 +192,22 @@ services:
       - "8084:8084"
     environment:
       - SERVER_PORT=8084
-      - MINIO_URL=http://minio_storage:9000 
+      - MINIO_URL=http://minio-storage:9000 
       - MINIO_ACCESS_KEY=admin
       - MINIO_SECRET_KEY=admin1234
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db-documentos:5432/documentos_db
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=admin
     depends_on:
-      - minio_storage
+      - minio-storage
+      - db-documentos
 
   # ------------------------------------
   # ALMACENAMIENTO S3 (MINIO)
   # ------------------------------------
-  minio_storage:
+  minio-storage:
     image: minio/minio:latest
-    container_name: minio_storage
+    container_name: minio-storage
     networks:
       - app-network
     ports:

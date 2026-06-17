@@ -21,14 +21,23 @@ public class S3Config {
     @Value("${minio.secret.key}")
     private String secretKey;
 
+    @Value("${minio.bucket.name}")
+    private String bucketName;
+
     @Bean
     public AmazonS3 amazonS3() {
         BasicAWSCredentials credentials = new BasicAWSCredentials(accessKey, secretKey);
         
-        return AmazonS3ClientBuilder.standard()
+        AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
                 .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(minioUrl, "us-east-1"))
                 .withPathStyleAccessEnabled(true) 
                 .withCredentials(new AWSStaticCredentialsProvider(credentials))
                 .build();
+
+        if (!s3Client.doesBucketExistV2(bucketName)) {
+            s3Client.createBucket(bucketName);
+        }
+
+        return s3Client;
     }
 }

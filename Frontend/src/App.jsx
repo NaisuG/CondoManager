@@ -7,6 +7,7 @@ import PaginaOrdenes from "./pages/Ordenes";
 import PaginaCondominio from "./pages/Condominio";
 import Sidebar from "./components/Sidebar";
 import NavbarPrivado from "./components/NavbarPriv";
+import PaginaDocumentos from "./pages/Documentos";
 import "./App.css";
 
 export default function App() {
@@ -65,6 +66,7 @@ export default function App() {
               {page === "finanzas" && <PaginaFinanzas />}
               {page === "ordenes" && <PaginaOrdenes />}
               {page === "condo" && <PaginaCondominio />}
+              {page === "documentos" && <PaginaDocumentos />}
             </main>
           </div>
         </div>

@@ -7,6 +7,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.client.MultipartBodyBuilder;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -190,5 +193,31 @@ public class BffService {
     public Mono<Map> obtenerLinkDescarga(Long idDocumento) {
         return webClient.get().uri(urlDocumentos + "/api/documentos/" + idDocumento + "/descargar")
                 .retrieve().bodyToMono(Map.class);
+    }
+
+    // --- SUBIDA DE DOCUMENTOS ---
+    public Mono<Map> subirDocumento(MultipartFile archivo, Long idCondominio, Long idUsuarioSubio) {
+        try {
+            MultipartBodyBuilder builder = new MultipartBodyBuilder();
+            
+            builder.part("archivo", new ByteArrayResource(archivo.getBytes()) {
+                @Override
+                public String getFilename() {
+                    return archivo.getOriginalFilename();
+                }
+            });
+            builder.part("idCondominio", idCondominio);
+            builder.part("idUsuarioSubio", idUsuarioSubio);
+
+            return webClient.post()
+                    .uri(urlDocumentos + "/api/documentos/subir")
+                    .bodyValue(builder.build())
+                    .retrieve()
+                    .bodyToMono(Map.class)
+                    .onErrorResume(e -> Mono.error(new RuntimeException("Error en ms-documentos: " + e.getMessage())));
+                    
+        } catch (Exception e) {
+            return Mono.error(new RuntimeException("Error procesando el archivo en el BFF: " + e.getMessage()));
+        }
     }
 }

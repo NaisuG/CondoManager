@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.HttpMethod;
@@ -23,6 +24,12 @@ public class DocumentoServicio {
 
     @Value("${minio.bucket.name}")
     private String bucketName;
+
+    @Value("${minio.access.key}")
+    private String accessKey;
+
+    @Value("${minio.secret.key}")
+    private String secretKey;
 
     public Documento subirDocumento(MultipartFile archivo, Long idCondominio, Long idUsuario) {
         try {
@@ -62,7 +69,15 @@ public class DocumentoServicio {
         tiempoMilisegundos += 1000 * 60 * 15; 
         expiracion.setTime(tiempoMilisegundos);
 
-        URL url = s3Client.generatePresignedUrl(bucketName, doc.getKeyMinio(), expiracion, HttpMethod.GET);
+        com.amazonaws.auth.BasicAWSCredentials creds = new com.amazonaws.auth.BasicAWSCredentials(accessKey, secretKey);
+        AmazonS3 s3Publico = AmazonS3ClientBuilder.standard()
+                .withEndpointConfiguration(new com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration("http://localhost:9005", "us-east-1"))
+                .withPathStyleAccessEnabled(true)
+                .withCredentials(new com.amazonaws.auth.AWSStaticCredentialsProvider(creds))
+                .build();
+
+        URL url = s3Publico.generatePresignedUrl(bucketName, doc.getKeyMinio(), expiracion, HttpMethod.GET);
+        
         return url.toString();
     }
 }
