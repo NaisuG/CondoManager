@@ -167,6 +167,7 @@ services:
       - URL_DOCUMENTOS=http://app-documentos:8084
       - SPRING_SERVLET_MULTIPART_MAX_FILE_SIZE=15MB
       - SPRING_SERVLET_MULTIPART_MAX_REQUEST_SIZE=15MB
+      - SERVER_TOMCAT_MAX_SWALLOW_SIZE=20MB
     depends_on:
       - app-mantenimiento
       - app-proveedor
@@ -202,6 +203,9 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db-documentos:5432/documentos_db
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=admin
+      - SPRING_SERVLET_MULTIPART_MAX_FILE_SIZE=15MB
+      - SPRING_SERVLET_MULTIPART_MAX_REQUEST_SIZE=15MB
+      - SERVER_TOMCAT_MAX_SWALLOW_SIZE=20MB
     depends_on:
       - minio-storage
       - db-documentos

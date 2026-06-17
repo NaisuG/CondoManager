@@ -31,13 +31,14 @@ public class DocumentoServicio {
     @Value("${minio.secret.key}")
     private String secretKey;
 
-    public Documento subirDocumento(MultipartFile archivo, Long idCondominio, Long idUsuario, String categoria, String periodo) {
+    public Documento subirDocumento(MultipartFile archivo, Long idCondominio, String nombreCarpeta, Long idUsuario, String categoria, String periodo) {
     try {
         String extension = archivo.getOriginalFilename().substring(archivo.getOriginalFilename().lastIndexOf("."));
         
+        // Usamos el nombre sanitizado para la ruta de MinIO
         String folder = (categoria.equals("COMPROBANTE")) 
-            ? "condominio-" + idCondominio + "/comprobantes/" + periodo + "/" 
-            : "condominio-" + idCondominio + "/general/";
+            ? nombreCarpeta + "/comprobantes/" + periodo + "/" 
+            : nombreCarpeta + "/general/";
             
         String keyMinio = folder + UUID.randomUUID().toString() + extension;
 
@@ -50,7 +51,7 @@ public class DocumentoServicio {
         Documento nuevoDoc = Documento.builder()
                 .nombreOriginal(archivo.getOriginalFilename())
                 .keyMinio(keyMinio)
-                .idCondominio(idCondominio)
+                .idCondominio(idCondominio) // Mantenemos la integridad referencial en Postgres
                 .idUsuarioSubio(idUsuario)
                 .categoria(categoria)
                 .build();
@@ -60,7 +61,7 @@ public class DocumentoServicio {
     } catch (Exception e) {
         throw new RuntimeException("Error al subir el archivo a MinIO: " + e.getMessage());
     }
-    }
+}
 
     public List<Documento> listarPorCondominioYCategoria(Long idCondominio, String categoria) {
     return documentoRepositorio.findByIdCondominioAndCategoriaOrderByFechaSubidaDesc(idCondominio, categoria);

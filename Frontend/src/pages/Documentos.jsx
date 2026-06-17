@@ -80,7 +80,7 @@ export default function Documentos() {
     formData.append("periodo", "general");
 
     setUploading(true);
-    try {
+      try {
       const res = await fetch('/api/bff/documentos/subir', {
         method: 'POST',
         body: formData
@@ -93,15 +93,21 @@ export default function Documentos() {
         setCondominioSubir('');
         
         if (condominioActivo === condominioSubir) {
-           cargarDocumentos(condominioActivo);
+          cargarDocumentos(condominioActivo);
         }
+      } else if (res.status === 413) {
+        alert("El archivo es demasiado pesado. El tamaño máximo permitido es de 15MB.");
       } else {
-        const errData = await res.json();
+        const errData = await res.json().catch(() => ({ error: "Error desconocido" }));
         alert(`Error al subir: ${errData.error}`);
       }
     } catch (error) {
       console.error("Error al subir archivo:", error);
-      alert("Error de red.");
+      if (error.message.includes('Failed to fetch') || error.message === 'Network Error') {
+        alert("Error de red: El archivo excede el límite de 15MB o el servidor no responde.");
+      } else {
+        alert("Error inesperado en la red.");
+      }
     } finally {
       setUploading(false);
     }

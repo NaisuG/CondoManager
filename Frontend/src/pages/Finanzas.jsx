@@ -9,6 +9,7 @@ export default function Finanzas() {
   const [cobros, setCobros] = useState([]);
   const [tarifas, setTarifas] = useState([]);
   const [tiposUnidad, setTiposUnidad] = useState([]);
+  const [condominios, setCondominios] = useState([]);
 
   // Estados de carga (UI)
   const [loading, setLoading] = useState(false);
@@ -26,7 +27,7 @@ export default function Finanzas() {
     cargarDatos();
   }, [mesActual, anioActual]);
 
-  const cargarDatos = async () => {
+    const cargarDatos = async () => {
     setLoading(true);
     try {
       const resCobros = await fetch(`/api/bff/contabilidad/cobros-detallados?mes=${mesActual}&anio=${anioActual}`);
@@ -37,6 +38,10 @@ export default function Finanzas() {
 
       const resTarifas = await fetch(`/api/bff/contabilidad/tarifas`);
       if (resTarifas.ok) setTarifas(await resTarifas.json());
+
+      // <-- AGREGAR ESTO: Cargamos el catálogo de condominios
+      const resCondominios = await fetch(`/api/bff/registro/condominios`);
+      if (resCondominios.ok) setCondominios(await resCondominios.json());
 
     } catch (error) {
       console.error("Error cargando datos financieros:", error);
@@ -78,10 +83,32 @@ const ejecutarPagoConArchivo = async (e) => {
   e.preventDefault();
   if (!comprobanteFile) return alert("El archivo del comprobante es obligatorio.");
 
+  // 1. Rescatamos el nombre que SÍ sabemos que envía ms-registro
+  const nombreCondo = cobroSeleccionado.nombreCondominio;
+
+  if (!nombreCondo || nombreCondo === 'Desconocido' || nombreCondo === 'N/A') {
+    alert("Error crítico: No se pudo identificar el nombre del condominio de esta deuda.");
+    return;
+  }
+
+  // 2. EL TRUCO: Buscamos el ID numérico en nuestro catálogo cruzando por el nombre
+  const condominioMatch = condominios.find(c => c.nombre === nombreCondo);
+  const idCondominioReal = condominioMatch ? condominioMatch.id : null;
+
+  if (!idCondominioReal) {
+    alert(`Error interno: No se pudo resolver el ID para el condominio "${nombreCondo}".`);
+    return; // Detenemos la ejecución si no encontramos el número para Postgres
+  }
+
+  // 3. Formateamos el texto para que sea una carpeta válida en MinIO
+  const folderName = nombreCondo.toLowerCase().replace(/\s+/g, '-');
   const periodo = `${mesActual}-${anioActual}`;
+
+  // 4. Armamos el envío perfecto: El número para Postgres y el Texto para MinIO
   const formData = new FormData();
   formData.append("archivo", comprobanteFile);
-  formData.append("idCondominio", cobroSeleccionado.idCondominio || 1); // fallback
+  formData.append("idCondominio", idCondominioReal); // El ID Long 
+  formData.append("nombreCarpeta", folderName);      // El String formateado
   formData.append("idUsuarioSubio", localStorage.getItem("idUsuario") || 1);
   formData.append("periodo", periodo);
 
@@ -90,13 +117,24 @@ const ejecutarPagoConArchivo = async (e) => {
       method: 'POST',
       body: formData
     });
+    
     if (res.ok) {
-      alert("Pago registrado y comprobante archivado.");
+      alert("Pago registrado y comprobante archivado correctamente.");
       setModalPagoOpen(false);
-      cargarDatos(); // Recarga la grilla contable
+      cargarDatos(); 
+    } else if (res.status === 413) {
+      alert("El archivo es demasiado pesado. El tamaño máximo permitido es de 15MB.");
+    } else {
+      const errData = await res.json().catch(() => ({}));
+      alert(`Error al registrar el pago: ${errData.error || "Error del servidor"}`);
     }
   } catch (err) {
-    console.error(err);
+    console.error("Error en la subida:", err);
+    if (err.message.includes('Failed to fetch') || err.message === 'Network Error') {
+      alert("Error de conexión: El archivo excede el límite permitido o se perdió la red.");
+    } else {
+      alert("Ocurrió un error inesperado al subir el archivo.");
+    }
   }
 };
 

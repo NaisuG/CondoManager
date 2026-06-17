@@ -148,45 +148,60 @@ public class BffService {
     }
 
     public Flux<CobroDetalleDTO> listarCobrosConDetalles(Integer mes, Integer anio) {
-        return webClient.get().uri(urlContabilidad + "/api/contabilidad/cobros?mes=" + mes + "&anio=" + anio)
-                .retrieve().bodyToFlux(Map.class).flatMap(cobro -> {
-                    Long idUnidad = Long.valueOf(cobro.get("idUnidad").toString());
-                    return webClient.get().uri(urlRegistro + "/api/unidades/" + idUnidad + "/detalle-completo")
-                            .retrieve().bodyToMono(Map.class).map(detalleRegistro -> {
-                                CobroDetalleDTO dto = new CobroDetalleDTO();
-                                dto.setIdCobro(Long.valueOf(cobro.get("id").toString()));
-                                dto.setMes(Integer.valueOf(cobro.get("mes").toString()));
-                                dto.setAnio(Integer.valueOf(cobro.get("anio").toString()));
-                                dto.setMonto(Integer.valueOf(cobro.get("montoCobrado").toString()));
-                                dto.setEstado(cobro.get("estado").toString());
-                                dto.setNumeroUnidad(Integer.valueOf(detalleRegistro.getOrDefault("numeroUnidad", 0).toString()));
-                                dto.setTipoUnidad(detalleRegistro.getOrDefault("tipoUnidad", "Sin Tipo").toString());
-                                dto.setNumeroTorre(Integer.valueOf(detalleRegistro.getOrDefault("numeroTorre", 0).toString()));
-                                dto.setNombreCondominio(detalleRegistro.getOrDefault("nombreCondominio", "Desconocido").toString());
-                                dto.setNombreInquilino(detalleRegistro.getOrDefault("nombreResidente", "Sin asignar").toString());
-                                
-                                // EL FIX DEL ID: Rescatamos el idCondominio verdadero
-                                dto.setIdCondominio(detalleRegistro.get("idCondominio") != null ? Long.valueOf(detalleRegistro.get("idCondominio").toString()) : 1L);
-                                
-                                return dto;
-                            }).onErrorReturn(crearCobroEnBlanco(cobro));
-                });
-    }
+    return webClient.get().uri(urlContabilidad + "/api/contabilidad/cobros?mes=" + mes + "&anio=" + anio)
+            .retrieve().bodyToFlux(Map.class).flatMap(cobro -> {
+                Long idUnidad = Long.valueOf(cobro.get("idUnidad").toString());
+                
+                return webClient.get().uri(urlRegistro + "/api/unidades/" + idUnidad + "/detalle-completo")
+                        .retrieve()
+                        .bodyToMono(Map.class)
+                        // SONDA 1: Si responde bien, imprimimos el JSON que nos entregó ms-registro
+                        .doOnNext(map -> System.out.println("EXITO ms-registro (Unidad " + idUnidad + "): " + map))
+                        .map(detalleRegistro -> {
+                            CobroDetalleDTO dto = new CobroDetalleDTO();
+                            dto.setIdCobro(Long.valueOf(cobro.get("id").toString()));
+                            dto.setMes(Integer.valueOf(cobro.get("mes").toString()));
+                            dto.setAnio(Integer.valueOf(cobro.get("anio").toString()));
+                            dto.setMonto(Integer.valueOf(cobro.get("montoCobrado").toString()));
+                            dto.setEstado(cobro.get("estado").toString());
+                            dto.setNumeroUnidad(Integer.valueOf(detalleRegistro.getOrDefault("numeroUnidad", 0).toString()));
+                            dto.setTipoUnidad(detalleRegistro.getOrDefault("tipoUnidad", "Sin Tipo").toString());
+                            dto.setNumeroTorre(Integer.valueOf(detalleRegistro.getOrDefault("numeroTorre", 0).toString()));
+                            dto.setNombreCondominio(detalleRegistro.getOrDefault("nombreCondominio", "Desconocido").toString());
+                            dto.setNombreInquilino(detalleRegistro.getOrDefault("nombreResidente", "Sin asignar").toString());
+                            
+                            Object idCondoObj = detalleRegistro.get("idCondominio");
+                            if (idCondoObj == null) {
+                                idCondoObj = detalleRegistro.get("condominioId");
+                            }
+                            if (idCondoObj == null && detalleRegistro.get("condominio") != null) {
+                                idCondoObj = ((java.util.Map<?, ?>) detalleRegistro.get("condominio")).get("id");
+                            }
+                            
+                            dto.setIdCondominio(idCondoObj != null ? Long.valueOf(idCondoObj.toString()) : null);
+                            return dto;
+                        })
+                        // SONDA 2: Si falla la conexión HTTP, imprimimos el error exacto
+                        .doOnError(e -> System.err.println("ERROR crítico llamando a ms-registro para Unidad " + idUnidad + ": " + e.getMessage()))
+                        .onErrorReturn(crearCobroEnBlanco(cobro));
+            });
+}   
 
     private CobroDetalleDTO crearCobroEnBlanco(Map cobro) {
-            CobroDetalleDTO dto = new CobroDetalleDTO();
-            dto.setIdCobro(Long.valueOf(cobro.get("id").toString()));
-            dto.setMes(Integer.valueOf(cobro.get("mes").toString()));
-            dto.setAnio(Integer.valueOf(cobro.get("anio").toString()));
-            dto.setMonto(Integer.valueOf(cobro.get("montoCobrado").toString()));
-            dto.setEstado(cobro.get("estado").toString());
-            dto.setNumeroUnidad(0);
-            dto.setTipoUnidad("N/A");
-            dto.setNumeroTorre(0);
-            dto.setNombreCondominio("N/A");
-            dto.setNombreInquilino("Sin asignar");
-            dto.setIdCondominio(1L);
-            return dto;
+    CobroDetalleDTO dto = new CobroDetalleDTO();
+    dto.setIdCobro(Long.valueOf(cobro.get("id").toString()));
+    dto.setMes(Integer.valueOf(cobro.get("mes").toString()));
+    dto.setAnio(Integer.valueOf(cobro.get("anio").toString()));
+    dto.setMonto(Integer.valueOf(cobro.get("montoCobrado").toString()));
+    dto.setEstado(cobro.get("estado").toString());
+    dto.setNumeroUnidad(0);
+    dto.setTipoUnidad("N/A");
+    dto.setNumeroTorre(0);
+    dto.setNombreCondominio("N/A");
+    dto.setNombreInquilino("Sin asignar");
+    // Eliminamos el dto.setIdCondominio(1L); para evitar el guardado en Edificio Central
+    dto.setIdCondominio(null); 
+    return dto;
     }
 
     // --- DOCUMENTOS ---
@@ -201,7 +216,7 @@ public class BffService {
     }
 
     // --- SUBIDA DE DOCUMENTOS ---
-    public Mono<Map> subirDocumento(MultipartFile archivo, Long idCondominio, Long idUsuarioSubio, String categoria, String periodo) {
+    public Mono<Map> subirDocumento(MultipartFile archivo, Long idCondominio, String nombreCarpeta, Long idUsuarioSubio, String categoria, String periodo) {
     try {
         MultipartBodyBuilder builder = new MultipartBodyBuilder();
         builder.part("archivo", new ByteArrayResource(archivo.getBytes()) {
@@ -210,7 +225,8 @@ public class BffService {
                 return archivo.getOriginalFilename();
             }
         });
-        builder.part("idCondominio", idCondominio);
+        builder.part("idCondominio", idCondominio); // Envía el Long para la Base de Datos
+        builder.part("nombreCarpeta", nombreCarpeta); // Envía el String para MinIO
         builder.part("idUsuarioSubio", idUsuarioSubio);
         builder.part("categoria", categoria);
         builder.part("periodo", periodo);
@@ -223,7 +239,7 @@ public class BffService {
     } catch (Exception e) {
         return Mono.error(new RuntimeException("Error en BFF al procesar multipart: " + e.getMessage()));
     }
-    }
+}
 
     public Flux<Map> listarDocumentosPorCategoria(Long idCondominio, String categoria) {
     return webClient.get()
@@ -233,19 +249,16 @@ public class BffService {
             .onErrorResume(e -> Flux.empty());
     }
 
-    public Mono<Object> procesarPagoConComprobante(Long idCobro, MultipartFile archivo, Long idCondominio, Long idUsuario, String periodo) {
-    return subirDocumento(archivo, idCondominio, idUsuario, "COMPROBANTE", periodo)
+   public Mono<Object> procesarPagoConComprobante(Long idCobro, MultipartFile archivo, Long idCondominio, String nombreCarpeta, Long idUsuario, String periodo) {
+    return subirDocumento(archivo, idCondominio, nombreCarpeta, idUsuario, "COMPROBANTE", periodo)
             .flatMap(docGuardado -> {
-                // Extraemos el ID del documento generado
                 Long idDoc = Long.valueOf(docGuardado.get("id").toString());
-                
-                // Le pegamos a contabilidad enviando el estado PAGADO y vinculando el ID del documento
                 return webClient.patch()
                         .uri(urlContabilidad + "/api/contabilidad/cobros/" + idCobro + "/registrar-pago?idDocumento=" + idDoc)
                         .retrieve()
                         .bodyToMono(Object.class);
             });
-    }
+}
 
 // Reversión de pago: Limpia el vínculo del documento en contabilidad y vuelve a PENDIENTE
     public Mono<Object> revertirPagoAPendiente(Long idCobro) {

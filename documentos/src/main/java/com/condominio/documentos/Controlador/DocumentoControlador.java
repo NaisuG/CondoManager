@@ -28,15 +28,17 @@ public class DocumentoControlador {
 
     @PostMapping("/subir")
     public ResponseEntity<Documento> subir(
-        @RequestParam("archivo") MultipartFile archivo,
-        @RequestParam("idCondominio") Long idCondominio,
-        @RequestParam("idUsuarioSubio") Long idUsuarioSubio,
-        @RequestParam("categoria") String categoria,
-        @RequestParam(value = "periodo", required = false, defaultValue = "general") String periodo) {
-    
-    Documento guardado = documentoService.subirDocumento(archivo, idCondominio, idUsuarioSubio, categoria, periodo);
+    @RequestParam("archivo") MultipartFile archivo,
+    @RequestParam("idCondominio") Long idCondominio, // El ID numérico para la Base de Datos
+    @RequestParam("nombreCarpeta") String nombreCarpeta, // El texto sanitizado para MinIO
+    @RequestParam("idUsuarioSubio") Long idUsuarioSubio,
+    @RequestParam("categoria") String categoria,
+    @RequestParam(value = "periodo", required = false, defaultValue = "general") String periodo) {
+
+    // Llamada corregida sin comas huérfanas
+    Documento guardado = documentoService.subirDocumento(archivo, idCondominio, nombreCarpeta, idUsuarioSubio, categoria, periodo);
     return ResponseEntity.ok(guardado);
-    }
+}
 
     @GetMapping("/condominio/{idCondominio}/categoria/{categoria}")
     public ResponseEntity<List<Documento>> listarPorCategoria(
