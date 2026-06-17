@@ -21,7 +21,7 @@ public class BffService {
     private final String urlAuth;
     private final String urlContabilidad;
 
-    public BffService(WebClient webClient,
+    public BffService(WebClient.Builder webClientBuilder,
                       @Value("${URL_MANTENIMIENTO:http://app-mantenimiento:8080}") String urlMantenimiento,
                       @Value("${URL_PROVEEDOR:http://app-proveedor:8081}") String urlProveedor,
                       @Value("${URL_REGISTRO:http://app-registro:8082}") String urlRegistro,

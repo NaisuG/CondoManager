@@ -15,11 +15,10 @@ import java.util.Map;
 
 @RestController
 @CrossOrigin(origins = "*")
-@CrossOrigin(origins = "*")
 @RequestMapping("/api/unidades")
 @RequiredArgsConstructor
 public class UnidadController  {
-public class UnidadController  {
+
 
     private final UnidadService unidadService;
 
