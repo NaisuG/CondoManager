@@ -251,4 +251,23 @@ public Mono<Object> generarCobrosMasivos(Integer mes, Integer anio) {
                     return Mono.error(new RuntimeException("No se pudo guardar la tarifa: " + e.getMessage()));
                 });
     }
+
+    public Flux<Map> listarTiposUnidad() {
+        return webClient.get()
+                .uri(urlRegistro + "/api/tipos-unidad")
+                .retrieve()
+                .bodyToFlux(Map.class)
+                .onErrorResume(e -> {
+                    System.err.println("Error llamando a Tipos de Unidad en Registro: " + e.getMessage());
+                    return Flux.empty();
+                });
+    }
+
+    public Flux<Map> listarTarifas() {
+        return webClient.get()
+                .uri(urlContabilidad + "/api/contabilidad/tarifas")
+                .retrieve()
+                .bodyToFlux(Map.class)
+                .onErrorResume(e -> Flux.empty());
+    }
 }

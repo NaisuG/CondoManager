@@ -28,8 +28,13 @@ const cargarDatos = async () => {
       const resCobros = await fetch(`http://localhost:9000/api/bff/contabilidad/cobros-detallados?mes=${mesActual}&anio=${anioActual}`);
       if (resCobros.ok) setCobros(await resCobros.json());
 
+      // 2. Cargar Tipos de Unidad
       const resTipos = await fetch(`http://localhost:9000/api/bff/registro/tipos-unidad`);
       if (resTipos.ok) setTiposUnidad(await resTipos.json());
+
+      // 3. Cargar Tarifas configuradas
+      const resTarifas = await fetch(`http://localhost:9000/api/bff/contabilidad/tarifas`);
+      if (resTarifas.ok) setTarifas(await resTarifas.json());
 
     } catch (error) {
       console.error("Error cargando datos:", error);
@@ -85,7 +90,7 @@ const cargarDatos = async () => {
     setIsModalOpen(true);
   };
 
-const guardarTarifa = async () => {
+  const guardarTarifa = async () => {
     if (!tarifaEditando.idTipoUnidad || !tarifaEditando.monto) {
       alert("Por favor selecciona un tipo de unidad e ingresa un monto.");
       return;
@@ -104,6 +109,7 @@ const guardarTarifa = async () => {
       if (response.ok) {
         alert("¡Tarifa actualizada correctamente!");
         setIsModalOpen(false);
+        cargarDatos();
       } else {
         const errorData = await response.json().catch(() => ({}));
         alert(`Error al guardar tarifa: ${errorData.error || "Error del servidor"}`);
@@ -114,7 +120,7 @@ const guardarTarifa = async () => {
     }
   };
 
-  return (
+return (
     <div className="finanzas-container">
       <div className="page-title">Gestión de Finanzas y Cobros</div>
 
@@ -124,12 +130,24 @@ const guardarTarifa = async () => {
         <p style={{ color: '#666', fontSize: '14px' }}>Configura el valor a cobrar por cada tipo de unidad antes de generar las boletas.</p>
         
         <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginTop: '15px' }}>
-          <div style={{ padding: '10px', background: '#f8f9fa', borderRadius: '5px', border: '1px solid #ddd' }}>
-             <strong>Departamento:</strong> $50.000 
-          </div>
-          <div style={{ padding: '10px', background: '#f8f9fa', borderRadius: '5px', border: '1px solid #ddd' }}>
-             <strong>Bodega:</strong> $10.000 
-          </div>
+          
+        {tiposUnidad.length === 0 ? (
+             <span style={{color: '#888'}}>Cargando tipos de unidad...</span>
+          ) : (
+             tiposUnidad.map((tipo) => {
+               // Buscamos si el microservicio nos mandó una tarifa para este tipo
+               const tarifaEncontrada = tarifas.find(t => t.idTipoUnidad === tipo.id);
+               // Si no hay, le ponemos 0
+               const montoMostrar = tarifaEncontrada ? tarifaEncontrada.monto : 0;
+
+               return (
+                 <div key={tipo.id} style={{ padding: '10px', background: '#f8f9fa', borderRadius: '5px', border: '1px solid #ddd' }}>
+                   <strong>{tipo.nombre}:</strong> ${montoMostrar.toLocaleString('es-CL')}
+                 </div>
+               );
+             })
+          )}
+
           <button className="btn-primary" onClick={abrirModalTarifa} style={{ marginLeft: 'auto' }}>
             + Modificar Tarifas
           </button>
@@ -225,12 +243,15 @@ const guardarTarifa = async () => {
             
             <div style={{ marginBottom: '15px' }}>
               <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Tipo de Unidad:</label>
+              
+              {/* AQUÍ ESTÁ EL SEGUNDO CAMBIO: El select ahora se llena con los datos reales */}
               <select style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
                       value={tarifaEditando.idTipoUnidad} 
                       onChange={(e) => setTarifaEditando({...tarifaEditando, idTipoUnidad: e.target.value})}>
                 <option value="">Seleccione un tipo...</option>
-                <option value="1">Departamento</option>
-                <option value="2">Bodega</option>
+                {tiposUnidad.map((tipo) => (
+                   <option key={tipo.id} value={tipo.id}>{tipo.nombre}</option>
+                ))}
               </select>
             </div>
 

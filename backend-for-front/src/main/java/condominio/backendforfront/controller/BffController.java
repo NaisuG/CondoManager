@@ -80,4 +80,14 @@ public class BffController {
                 .map(resultado -> ResponseEntity.ok().body(resultado))
                 .onErrorResume(e -> Mono.just(ResponseEntity.status(500).body(Map.of("error", e.getMessage()))));
     }
+
+    @GetMapping("/registro/tipos-unidad")
+    public Flux<Map> getTiposUnidad() {
+        return bffService.listarTiposUnidad();
+    }
+
+    @GetMapping("/contabilidad/tarifas")
+    public Flux<Map> getTarifas() {
+        return bffService.listarTarifas();
+    }
 }

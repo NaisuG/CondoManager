@@ -65,4 +65,9 @@ public class ContabilidadController {
     public ResponseEntity<List<CobroMensual>> generarCobrosMasivos(@RequestBody List<GenerarCobroRequestDTO> peticiones) {
         return ResponseEntity.ok(service.generarCobrosMasivos(peticiones));
     }
+
+    @GetMapping("/tarifas")
+    public ResponseEntity<List<com.condominio.contabilidad.Model.ValorGastoComun>> listarTarifas() {
+        return ResponseEntity.ok(service.listarTarifas());
+    }
 }

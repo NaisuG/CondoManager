@@ -112,4 +112,8 @@ public class ContabilidadService {
         // Guardamos todos de un solo golpe
         return cobroMensualRepository.saveAll(nuevosCobros);
     }
+
+    public List<com.condominio.contabilidad.Model.ValorGastoComun> listarTarifas() {
+        return valorGastoComunRepository.findAll();
+    }
 }
