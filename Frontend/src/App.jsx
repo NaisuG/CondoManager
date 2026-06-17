@@ -5,7 +5,6 @@ import PaginaOrdenes from "./pages/Ordenes";
 import PaginaCondominio from "./pages/Condominio";
 import PaginaDashboard from "./pages/Dashboard";
 import "./App.css";
-cl
 export default function App() {
   //controlar si el usuario inicio sesion
   const [estaLogueado, setEstaLogueado] = useState(() => {
