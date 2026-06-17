@@ -20,50 +20,67 @@ public class BffService {
     private final String urlRegistro;
     private final String urlAuth;
     private final String urlContabilidad;
+    private final String urlDocumentos;
 
     public BffService(WebClient.Builder webClientBuilder,
                       @Value("${URL_MANTENIMIENTO:http://app-mantenimiento:8080}") String urlMantenimiento,
                       @Value("${URL_PROVEEDOR:http://app-proveedor:8081}") String urlProveedor,
                       @Value("${URL_REGISTRO:http://app-registro:8082}") String urlRegistro,
                       @Value("${URL_AUTH:http://app-auth:8085}") String urlAuth,
-                      @Value("${URL_CONTABILIDAD:http://app-contabilidad:8083}") String urlContabilidad ) {
+                      @Value("${URL_CONTABILIDAD:http://app-contabilidad:8083}") String urlContabilidad,
+                      @Value("${URL_DOCUMENTOS:http://app-documentos:8084}") String urlDocumentos) {
         this.webClient = webClientBuilder.build();
         this.urlMantenimiento = urlMantenimiento;
         this.urlProveedor = urlProveedor;
         this.urlRegistro = urlRegistro;
         this.urlAuth = urlAuth;
         this.urlContabilidad = urlContabilidad;
+        this.urlDocumentos = urlDocumentos;
     }
+
+    // --- AUTH ---
     public Mono<ResponseEntity<Map>> registrarAuth(Map<String, Object> registroDto) {
-        return webClient.post()
-                .uri("http://app-auth:8085/api/auth/register")
+        return webClient.post().uri(urlAuth + "/api/auth/register")
                 .header("Content-Type", "application/json")
-                .bodyValue(registroDto)
-                .retrieve()
-                .toEntity(Map.class);
+                .bodyValue(registroDto).retrieve().toEntity(Map.class);
     }
 
     public Mono<ResponseEntity<Map>> loginAuth(Map<String, Object> loginDto) {
-        return this.webClient.post()
-                .uri(urlAuth + "/api/auth/login")
-                .bodyValue(loginDto)
-                .retrieve()
-                .toEntity(Map.class)
+        return webClient.post().uri(urlAuth + "/api/auth/login")
+                .bodyValue(loginDto).retrieve().toEntity(Map.class)
                 .doOnError(e -> System.err.println("Error en BFF-Auth Login: " + e.getMessage()));
     }
 
+    // --- REGISTRO ---
+    public Flux<CondominioFullDTO> listarCondominios() {
+        return webClient.get().uri(urlRegistro + "/api/condominios").retrieve().bodyToFlux(Map.class)
+                .flatMap(c -> {
+                    Long id = Long.valueOf(c.get("id").toString());
+                    return webClient.get().uri(urlRegistro + "/api/condominios/" + id).retrieve()
+                            .bodyToMono(CondominioFullDTO.class).onErrorResume(e -> Mono.empty());
+                });
+    }
 
+    public Mono<CondominioFullDTO> obtenerCondominioCompleto(Long id) {
+        return webClient.get().uri(urlRegistro + "/api/condominios/" + id).retrieve()
+                .bodyToMono(CondominioFullDTO.class).onErrorResume(e -> Mono.empty());
+    }
+
+    public Mono<Map> obtenerEstadisticasUnidades() {
+        return webClient.get().uri(urlRegistro + "/api/unidades/estadisticas").retrieve().bodyToMono(Map.class);
+    }
+
+    public Flux<Map> listarTiposUnidad() {
+        return webClient.get().uri(urlRegistro + "/api/tipos-unidad").retrieve().bodyToFlux(Map.class)
+                .onErrorResume(e -> Flux.empty());
+    }
+
+    // --- MANTENIMIENTO ---
     public Flux<OrdenResumenDTO> listarOrdenesDetalladas() {
-        return webClient.get()
-                .uri(urlMantenimiento + "/api/mantenimiento/ordenes")
-                .retrieve()
-                .bodyToFlux(Map.class)
+        return webClient.get().uri(urlMantenimiento + "/api/mantenimiento/ordenes").retrieve().bodyToFlux(Map.class)
                 .flatMap(orden -> {
                     String provId = orden.get("idProveedor") != null ? orden.get("idProveedor").toString() : "0";
-                    return webClient.get()
-                            .uri(urlProveedor + "/api/proveedores/" + provId)
-                            .retrieve()
-                            .bodyToMono(Map.class)
+                    return webClient.get().uri(urlProveedor + "/api/proveedores/" + provId).retrieve().bodyToMono(Map.class)
                             .map(prov -> {
                                 OrdenResumenDTO dto = new OrdenResumenDTO();
                                 dto.setIdOrden(Long.valueOf(orden.get("id").toString()));
@@ -71,27 +88,8 @@ public class BffService {
                                 dto.setNombreEmpresa(prov.get("nombreEmpresa").toString());
                                 dto.setEstado(orden.get("estado") != null ? orden.get("estado").toString() : "PENDIENTE");
                                 return dto;
-                            })
-                            .onErrorReturn(crearDTOGenerico(orden));
-                })
-                .onErrorResume(e -> Flux.empty());
-    }
-
-    public Mono<CondominioFullDTO> obtenerCondominioCompleto(Long id) {
-        String urlFinal = urlRegistro + "/api/condominios/" + id;
-        
-        System.out.println("Llamando a Registro en: " + urlFinal);
-        System.out.println("Llamando a Registro en: " + urlFinal);
-
-        return webClient.get()
-                .uri(urlFinal)
-                .retrieve()
-                .bodyToMono(CondominioFullDTO.class)
-                .doOnNext(res -> System.out.println("Datos recibidos para: " + res.getNombre()))
-                .doOnError(e -> System.err.println("Error llamando a Registro: " + e.getMessage()))
-                .doOnNext(res -> System.out.println("Datos recibidos para: " + res.getNombre()))
-                .doOnError(e -> System.err.println("Error llamando a Registro: " + e.getMessage()))
-                .onErrorResume(e -> Mono.empty());
+                            }).onErrorReturn(crearDTOGenerico(orden));
+                }).onErrorResume(e -> Flux.empty());
     }
 
     private OrdenResumenDTO crearDTOGenerico(Map orden) {
@@ -103,79 +101,71 @@ public class BffService {
         return dto;
     }
 
-    public Mono<Map> obtenerEstadisticasUnidades() {
-        String urlFinal = urlRegistro + "/api/unidades/estadisticas";
-        return webClient.get()
-            .uri(urlFinal)
-            .retrieve()
-            .bodyToMono(Map.class);
-    }
-
-    public Flux<CondominioFullDTO> listarCondominios() {
-    return webClient.get()
-        .uri(urlRegistro + "/api/condominios")
-        .retrieve()
-        .bodyToFlux(Map.class)
-        .flatMap(c -> {
-            Long id = Long.valueOf(c.get("id").toString());
-            return webClient.get()
-                .uri(urlRegistro + "/api/condominios/" + id)
-                .retrieve()
-                .bodyToMono(CondominioFullDTO.class)
-                .onErrorResume(e -> Mono.empty());
-        });
-    }
-
+    // --- CONTABILIDAD ---
     public Mono<Map> obtenerEstadisticasFinanzas(Integer mes, Integer anio) {
-        String urlFinal = urlContabilidad + "/api/contabilidad/estadisticas?mes=" + mes + "&anio=" + anio;
-        return webClient.get()
-            .uri(urlFinal)
-            .retrieve()
-            .bodyToMono(Map.class);
+        return webClient.get().uri(urlContabilidad + "/api/contabilidad/estadisticas?mes=" + mes + "&anio=" + anio)
+                .retrieve().bodyToMono(Map.class);
     }
-    public Flux<CobroDetalleDTO> listarCobrosConDetalles(Integer mes, Integer anio) {
-        String urlCobros = urlContabilidad + "/api/contabilidad/cobros?mes=" + mes + "&anio=" + anio;
 
-        return webClient.get()
-                .uri(urlCobros)
-                .retrieve()
-                .bodyToFlux(Map.class) // Traemos los cobros de contabilidad
-                .flatMap(cobro -> {
+    public Flux<Map> listarTarifas() {
+        return webClient.get().uri(urlContabilidad + "/api/contabilidad/tarifas").retrieve().bodyToFlux(Map.class)
+                .onErrorResume(e -> Flux.empty());
+    }
+
+    public Mono<Object> guardarTarifa(Map<String, Object> tarifaDto) {
+        return webClient.post().uri(urlContabilidad + "/api/contabilidad/tarifas")
+                .header("Content-Type", "application/json").bodyValue(tarifaDto).retrieve().bodyToMono(Object.class)
+                .onErrorResume(e -> Mono.error(new RuntimeException("No se pudo guardar la tarifa: " + e.getMessage())));
+    }
+
+    public Mono<Object> actualizarEstadoCobro(Long id, String estado) {
+        return webClient.patch().uri(urlContabilidad + "/api/contabilidad/cobros/" + id + "/estado?estado=" + estado)
+                .retrieve().bodyToMono(Object.class);
+    }
+
+    public Mono<Object> generarCobrosMasivos(Integer mes, Integer anio) {
+        return webClient.get().uri(urlRegistro + "/api/unidades").retrieve().bodyToFlux(Map.class)
+                .map(unidad -> {
+                    Map<String, Object> peticion = new HashMap<>();
+                    peticion.put("idUnidad", unidad.get("id"));
+                    Object tipoId = unidad.get("tipoId");
+                    if (tipoId == null) tipoId = unidad.get("idTipoUnidad");
+                    peticion.put("idTipoUnidad", tipoId != null ? tipoId : 1);
+                    peticion.put("mes", mes);
+                    peticion.put("anio", anio);
+                    return peticion;
+                }).collectList()
+                .flatMap(listaPeticiones -> {
+                    if (listaPeticiones.isEmpty()) return Mono.just(Map.of("mensaje", "No hay unidades registradas"));
+                    return webClient.post().uri(urlContabilidad + "/api/contabilidad/cobros/masivo")
+                            .header("Content-Type", "application/json").bodyValue(listaPeticiones).retrieve()
+                            .bodyToMono(Object.class)
+                            .onErrorResume(e -> Mono.error(new RuntimeException("Rechazo de contabilidad: " + e.getMessage())));
+                });
+    }
+
+    public Flux<CobroDetalleDTO> listarCobrosConDetalles(Integer mes, Integer anio) {
+        return webClient.get().uri(urlContabilidad + "/api/contabilidad/cobros?mes=" + mes + "&anio=" + anio)
+                .retrieve().bodyToFlux(Map.class).flatMap(cobro -> {
                     Long idUnidad = Long.valueOf(cobro.get("idUnidad").toString());
-                    
-                    // Aquí llamamos al microservicio de Registro para traer los detalles de esa unidad específica
-                    // Asumimos que tienes un endpoint en Registro que devuelve la unidad completa
-                    return webClient.get()
-                            .uri(urlRegistro + "/api/unidades/" + idUnidad + "/detalle-completo")
-                            .retrieve()
-                            .bodyToMono(Map.class)
-                            .map(detalleRegistro -> {
+                    return webClient.get().uri(urlRegistro + "/api/unidades/" + idUnidad + "/detalle-completo")
+                            .retrieve().bodyToMono(Map.class).map(detalleRegistro -> {
                                 CobroDetalleDTO dto = new CobroDetalleDTO();
-                                
-                                // Mapeamos lo de Contabilidad
                                 dto.setIdCobro(Long.valueOf(cobro.get("id").toString()));
                                 dto.setMes(Integer.valueOf(cobro.get("mes").toString()));
                                 dto.setAnio(Integer.valueOf(cobro.get("anio").toString()));
                                 dto.setMonto(Integer.valueOf(cobro.get("montoCobrado").toString()));
                                 dto.setEstado(cobro.get("estado").toString());
-
-                                // Mapeamos lo de Registro (con validaciones por si viene vacío)
                                 dto.setNumeroUnidad(Integer.valueOf(detalleRegistro.getOrDefault("numeroUnidad", 0).toString()));
                                 dto.setTipoUnidad(detalleRegistro.getOrDefault("tipoUnidad", "Sin Tipo").toString());
                                 dto.setNumeroTorre(Integer.valueOf(detalleRegistro.getOrDefault("numeroTorre", 0).toString()));
                                 dto.setNombreCondominio(detalleRegistro.getOrDefault("nombreCondominio", "Desconocido").toString());
-                                
-                                // El inquilino (lo que mencionaste de los "blanks")
                                 dto.setNombreInquilino(detalleRegistro.getOrDefault("nombreResidente", "Sin asignar").toString());
-
                                 return dto;
-                            })
-                            // Si Registro falla o no encuentra la unidad, devolvemos el cobro con datos en blanco
-                            .onErrorReturn(crearCobroEnBlanco(cobro)); 
+                            }).onErrorReturn(crearCobroEnBlanco(cobro));
                 });
     }
 
-    // Método auxiliar (ponlo debajo) para cuando la unidad no existe en Registro
     private CobroDetalleDTO crearCobroEnBlanco(Map cobro) {
         CobroDetalleDTO dto = new CobroDetalleDTO();
         dto.setIdCobro(Long.valueOf(cobro.get("id").toString()));
@@ -183,7 +173,6 @@ public class BffService {
         dto.setAnio(Integer.valueOf(cobro.get("anio").toString()));
         dto.setMonto(Integer.valueOf(cobro.get("montoCobrado").toString()));
         dto.setEstado(cobro.get("estado").toString());
-        
         dto.setNumeroUnidad(0);
         dto.setTipoUnidad("N/A");
         dto.setNumeroTorre(0);
@@ -192,82 +181,14 @@ public class BffService {
         return dto;
     }
 
-public Mono<Object> generarCobrosMasivos(Integer mes, Integer anio) {
-        // 1. Buscamos todas las unidades en el MS de Registro
-        return webClient.get()
-            .uri(urlRegistro + "/api/unidades")
-            .retrieve()
-            .bodyToFlux(Map.class)
-            // 2. Las transformamos al formato que Contabilidad espera
-            .map(unidad -> {
-                Map<String, Object> peticion = new HashMap<>();
-                peticion.put("idUnidad", unidad.get("id"));
-                
-                // Seguridad anti-nulos: si la llave no viene como tipoId, intentamos otra o mandamos 1 por defecto
-                Object tipoId = unidad.get("tipoId");
-                if (tipoId == null) tipoId = unidad.get("idTipoUnidad");
-                peticion.put("idTipoUnidad", tipoId != null ? tipoId : 1); 
-                
-                peticion.put("mes", mes);
-                peticion.put("anio", anio);
-                return peticion;
-            })
-            .collectList()
-            // 3. Enviamos la lista completa al MS de Contabilidad
-            .flatMap(listaPeticiones -> {
-                if (listaPeticiones.isEmpty()) {
-                    return Mono.just(Map.of("mensaje", "No hay unidades registradas para cobrar"));
-                }
-                return webClient.post()
-                    .uri(urlContabilidad + "/api/contabilidad/cobros/masivo")
-                    .header("Content-Type", "application/json") // Forzamos que vaya como JSON
-                    .bodyValue(listaPeticiones)
-                    .retrieve()
-                    .bodyToMono(Object.class)
-                    .onErrorResume(e -> {
-                        // Atrapamos el error de Contabilidad para que el BFF no explote
-                        System.err.println("Error desde MS Contabilidad: " + e.getMessage());
-                        return Mono.error(new RuntimeException("Rechazo de contabilidad: " + e.getMessage()));
-                    });
-            });
+    // --- DOCUMENTOS ---
+    public Flux<Map> listarDocumentosPorCondominio(Long idCondominio) {
+        return webClient.get().uri(urlDocumentos + "/api/documentos/condominio/" + idCondominio)
+                .retrieve().bodyToFlux(Map.class).onErrorResume(e -> Flux.empty());
     }
 
-    public Mono<Object> actualizarEstadoCobro(Long id, String estado) {
-        return webClient.patch()
-                .uri(urlContabilidad + "/api/contabilidad/cobros/" + id + "/estado?estado=" + estado)
-                .retrieve()
-                .bodyToMono(Object.class);
-    }
-
-    public Mono<Object> guardarTarifa(Map<String, Object> tarifaDto) {
-        return webClient.post()
-                .uri(urlContabilidad + "/api/contabilidad/tarifas")
-                .header("Content-Type", "application/json")
-                .bodyValue(tarifaDto)
-                .retrieve()
-                .bodyToMono(Object.class)
-                .onErrorResume(e -> {
-                    System.err.println("Error MS Contabilidad (Tarifas): " + e.getMessage());
-                    return Mono.error(new RuntimeException("No se pudo guardar la tarifa: " + e.getMessage()));
-                });
-    }
-
-    public Flux<Map> listarTiposUnidad() {
-        return webClient.get()
-                .uri(urlRegistro + "/api/tipos-unidad")
-                .retrieve()
-                .bodyToFlux(Map.class)
-                .onErrorResume(e -> {
-                    System.err.println("Error llamando a Tipos de Unidad en Registro: " + e.getMessage());
-                    return Flux.empty();
-                });
-    }
-
-    public Flux<Map> listarTarifas() {
-        return webClient.get()
-                .uri(urlContabilidad + "/api/contabilidad/tarifas")
-                .retrieve()
-                .bodyToFlux(Map.class)
-                .onErrorResume(e -> Flux.empty());
+    public Mono<Map> obtenerLinkDescarga(Long idDocumento) {
+        return webClient.get().uri(urlDocumentos + "/api/documentos/" + idDocumento + "/descargar")
+                .retrieve().bodyToMono(Map.class);
     }
 }
