@@ -8,6 +8,7 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class CondominioRequestDTO {
+    private Long idUsuario;
     private String nombre;
     private String direccion;
 }

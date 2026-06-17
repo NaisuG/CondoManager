@@ -2,6 +2,7 @@ package condominio.backendforfront.service;
 
 import condominio.backendforfront.dto.*;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
@@ -17,19 +18,40 @@ public class BffService {
     private final String urlMantenimiento;
     private final String urlProveedor;
     private final String urlRegistro;
+    private final String urlAuth;
     private final String urlContabilidad;
 
-    public BffService(WebClient.Builder webClientBuilder,
+    public BffService(WebClient webClient,
                       @Value("${URL_MANTENIMIENTO:http://app-mantenimiento:8080}") String urlMantenimiento,
                       @Value("${URL_PROVEEDOR:http://app-proveedor:8081}") String urlProveedor,
                       @Value("${URL_REGISTRO:http://app-registro:8082}") String urlRegistro,
+                      @Value("${URL_AUTH:http://app-auth:8085}") String urlAuth,
                       @Value("${URL_CONTABILIDAD:http://app-contabilidad:8083}") String urlContabilidad ) {
         this.webClient = webClientBuilder.build();
         this.urlMantenimiento = urlMantenimiento;
         this.urlProveedor = urlProveedor;
         this.urlRegistro = urlRegistro;
+        this.urlAuth = urlAuth;
         this.urlContabilidad = urlContabilidad;
     }
+    public Mono<ResponseEntity<Map>> registrarAuth(Map<String, Object> registroDto) {
+        return webClient.post()
+                .uri("http://app-auth:8085/api/auth/register")
+                .header("Content-Type", "application/json")
+                .bodyValue(registroDto)
+                .retrieve()
+                .toEntity(Map.class);
+    }
+
+    public Mono<ResponseEntity<Map>> loginAuth(Map<String, Object> loginDto) {
+        return this.webClient.post()
+                .uri(urlAuth + "/api/auth/login")
+                .bodyValue(loginDto)
+                .retrieve()
+                .toEntity(Map.class)
+                .doOnError(e -> System.err.println("Error en BFF-Auth Login: " + e.getMessage()));
+    }
+
 
     public Flux<OrdenResumenDTO> listarOrdenesDetalladas() {
         return webClient.get()

@@ -43,6 +43,19 @@ services:
       - "5434:5432"
     restart: always
 
+  db-auth:
+    image: postgres:15-alpine
+    container_name: db_auth
+    networks:
+      - app-network
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: auth_db
+    ports:
+      - "5435:5432"
+    restart: always
+
   db-contabilidad:
     image: postgres:15-alpine
     container_name: db_contabilidad
@@ -137,10 +150,26 @@ services:
       - URL_MANTENIMIENTO=http://app-mantenimiento:8080
       - URL_PROVEEDOR=http://app-proveedor:8081
       - URL_REGISTRO=http://app-registro:8082
+      - URL_AUTH=http://app-auth:8085
     depends_on:
       - app-mantenimiento
       - app-proveedor
       - app-registro
+
+  app-auth:
+    build: ./auth
+    container_name: ms_auth
+    networks:
+      - app-network
+    ports:
+      - "8085:8085"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db-auth:5432/auth_db
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=admin
+      - SERVER_PORT=8085
+    depends_on:
+      - db-auth
 
   # --- RED ---
 networks:

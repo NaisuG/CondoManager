@@ -9,6 +9,7 @@ import lombok.*;
 @Builder
 public class CondominioDTO {
     private Long id;
+    private Long idUsuario;
     private String nombre;
     private String direccion;
 }
