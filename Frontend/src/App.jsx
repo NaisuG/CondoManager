@@ -69,6 +69,10 @@ export default function App() {
             >
             Registro condominio
           </span>
+            {/* Botón para salir */}
+          <span className="sidebar-link" onClick={handleLogout} style={{ marginTop: "auto", color: "#ff8484" }}>
+            Cerrar Sesión
+          </span>
         </nav>
       </aside>
       <main className="main">
