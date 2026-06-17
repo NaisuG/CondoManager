@@ -192,7 +192,7 @@ public class BffService {
         return dto;
     }
 
-    public Mono<Object> generarCobrosMasivos(Integer mes, Integer anio) {
+public Mono<Object> generarCobrosMasivos(Integer mes, Integer anio) {
         // 1. Buscamos todas las unidades en el MS de Registro
         return webClient.get()
             .uri(urlRegistro + "/api/unidades")
@@ -202,7 +202,12 @@ public class BffService {
             .map(unidad -> {
                 Map<String, Object> peticion = new HashMap<>();
                 peticion.put("idUnidad", unidad.get("id"));
-                peticion.put("idTipoUnidad", unidad.get("tipoId")); // Ahora sí lo tenemos
+                
+                // Seguridad anti-nulos: si la llave no viene como tipoId, intentamos otra o mandamos 1 por defecto
+                Object tipoId = unidad.get("tipoId");
+                if (tipoId == null) tipoId = unidad.get("idTipoUnidad");
+                peticion.put("idTipoUnidad", tipoId != null ? tipoId : 1); 
+                
                 peticion.put("mes", mes);
                 peticion.put("anio", anio);
                 return peticion;
@@ -211,13 +216,19 @@ public class BffService {
             // 3. Enviamos la lista completa al MS de Contabilidad
             .flatMap(listaPeticiones -> {
                 if (listaPeticiones.isEmpty()) {
-                    return Mono.just("No hay unidades registradas para cobrar");
+                    return Mono.just(Map.of("mensaje", "No hay unidades registradas para cobrar"));
                 }
                 return webClient.post()
                     .uri(urlContabilidad + "/api/contabilidad/cobros/masivo")
+                    .header("Content-Type", "application/json") // Forzamos que vaya como JSON
                     .bodyValue(listaPeticiones)
                     .retrieve()
-                    .bodyToMono(Object.class);
+                    .bodyToMono(Object.class)
+                    .onErrorResume(e -> {
+                        // Atrapamos el error de Contabilidad para que el BFF no explote
+                        System.err.println("Error desde MS Contabilidad: " + e.getMessage());
+                        return Mono.error(new RuntimeException("Rechazo de contabilidad: " + e.getMessage()));
+                    });
             });
     }
 
@@ -226,5 +237,18 @@ public class BffService {
                 .uri(urlContabilidad + "/api/contabilidad/cobros/" + id + "/estado?estado=" + estado)
                 .retrieve()
                 .bodyToMono(Object.class);
+    }
+
+    public Mono<Object> guardarTarifa(Map<String, Object> tarifaDto) {
+        return webClient.post()
+                .uri(urlContabilidad + "/api/contabilidad/tarifas")
+                .header("Content-Type", "application/json")
+                .bodyValue(tarifaDto)
+                .retrieve()
+                .bodyToMono(Object.class)
+                .onErrorResume(e -> {
+                    System.err.println("Error MS Contabilidad (Tarifas): " + e.getMessage());
+                    return Mono.error(new RuntimeException("No se pudo guardar la tarifa: " + e.getMessage()));
+                });
     }
 }

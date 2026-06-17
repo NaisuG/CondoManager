@@ -21,22 +21,24 @@ export default function Finanzas() {
     cargarDatos();
   }, [mesActual, anioActual]);
 
-  const cargarDatos = async () => {
+const cargarDatos = async () => {
     setLoading(true);
     try {
-      // Cargar Cobros Detallados
-      const resCobros = await fetch(`/api/bff/contabilidad/cobros-detallados?mes=${mesActual}&anio=${anioActual}`);
-      if (resCobros.ok) {
-        setCobros(await resCobros.json());
-      }
+      // 1. Cargar Cobros
+      const resCobros = await fetch(`http://localhost:9000/api/bff/contabilidad/cobros-detallados?mes=${mesActual}&anio=${anioActual}`);
+      if (resCobros.ok) setCobros(await resCobros.json());
+
+      const resTipos = await fetch(`http://localhost:9000/api/bff/registro/tipos-unidad`);
+      if (resTipos.ok) setTiposUnidad(await resTipos.json());
+
     } catch (error) {
-      console.error("Error cargando datos de finanzas:", error);
+      console.error("Error cargando datos:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  // --- NUEVA FUNCIÓN CONECTADA ---
+
   const generarBoletasMes = async () => {
     if (!window.confirm(`¿Estás seguro de generar todas las deudas para el mes ${mesActual}/${anioActual}?`)) return;
     
@@ -50,7 +52,8 @@ export default function Finanzas() {
         alert("¡Boletas generadas con éxito!");
         cargarDatos(); // Recargar la tabla para ver los nuevos cobros
       } else {
-        alert("Hubo un problema al generar las boletas.");
+        const errorData = await response.json().catch(() => ({}));
+        alert(`Hubo un problema: ${errorData.error || "Error desconocido del servidor"}`);
       }
     } catch (error) {
       console.error("Error al generar boletas:", error);
@@ -68,7 +71,6 @@ export default function Finanzas() {
       });
       
       if (response.ok) {
-        // Actualizamos el estado localmente para que se vea rápido sin tener que recargar toda la tabla
         setCobros(cobros.map(c => 
           c.idCobro === idCobro ? { ...c, estado: 'PAGADO' } : c
         ));
@@ -83,10 +85,33 @@ export default function Finanzas() {
     setIsModalOpen(true);
   };
 
-  const guardarTarifa = async () => {
-    console.log("Guardando tarifa confirmada:", tarifaEditando);
-    setIsModalOpen(false);
-    // TODO: Conectar cuando tengamos el endpoint de tarifas listo en el BFF
+const guardarTarifa = async () => {
+    if (!tarifaEditando.idTipoUnidad || !tarifaEditando.monto) {
+      alert("Por favor selecciona un tipo de unidad e ingresa un monto.");
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/bff/contabilidad/tarifas', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          idTipoUnidad: parseInt(tarifaEditando.idTipoUnidad),
+          monto: parseFloat(tarifaEditando.monto)
+        })
+      });
+
+      if (response.ok) {
+        alert("¡Tarifa actualizada correctamente!");
+        setIsModalOpen(false);
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        alert(`Error al guardar tarifa: ${errorData.error || "Error del servidor"}`);
+      }
+    } catch (error) {
+      console.error("Error al guardar tarifa:", error);
+      alert("Error de conexión al servidor.");
+    }
   };
 
   return (

@@ -12,7 +12,7 @@ import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/api/bff")
-@CrossOrigin(origins = "http://localhost:3000", allowedHeaders = "*", methods = {RequestMethod.GET, RequestMethod.POST})
+@CrossOrigin(origins = "*", allowedHeaders = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PATCH, RequestMethod.PUT, RequestMethod.DELETE})
 public class BffController {
     private final BffService bffService;
 
@@ -60,13 +60,24 @@ public class BffController {
         return bffService.listarCobrosConDetalles(mes, anio);
     }
 
-    @PostMapping("/contabilidad/generar-mes")
-    public Mono<Object> generarCobrosMasivos(@RequestParam Integer mes, @RequestParam Integer anio) {
-        return bffService.generarCobrosMasivos(mes, anio);
+@PostMapping("/contabilidad/generar-mes")
+    public Mono<ResponseEntity<Object>> generarCobrosMasivos(@RequestParam Integer mes, @RequestParam Integer anio) {
+        return bffService.generarCobrosMasivos(mes, anio)
+                .map(resultado -> ResponseEntity.ok().body(resultado))
+                .onErrorResume(e -> Mono.just(ResponseEntity.status(500).body(Map.of("error", e.getMessage()))));
     }
 
     @PatchMapping("/contabilidad/cobros/{id}/estado")
-    public Mono<Object> actualizarEstadoCobro(@PathVariable Long id, @RequestParam String estado) {
-        return bffService.actualizarEstadoCobro(id, estado);
+    public Mono<ResponseEntity<Object>> actualizarEstadoCobro(@PathVariable Long id, @RequestParam String estado) {
+        return bffService.actualizarEstadoCobro(id, estado)
+                .map(resultado -> ResponseEntity.ok().body(resultado))
+                .onErrorResume(e -> Mono.just(ResponseEntity.status(500).body(Map.of("error", e.getMessage()))));
+    }
+
+    @PostMapping("/contabilidad/tarifas")
+    public Mono<ResponseEntity<Object>> guardarTarifa(@RequestBody Map<String, Object> tarifaDto) {
+        return bffService.guardarTarifa(tarifaDto)
+                .map(resultado -> ResponseEntity.ok().body(resultado))
+                .onErrorResume(e -> Mono.just(ResponseEntity.status(500).body(Map.of("error", e.getMessage()))));
     }
 }
