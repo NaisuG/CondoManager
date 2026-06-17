@@ -1,0 +1,168 @@
+.condo-contenedor {
+    padding: 2rem;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Barra de consulta */
+.condo-search-bar {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+    max-width: 500px;
+    width: 100%;
+}
+
+.condo-input-wrapper {
+    position: relative;
+    flex: 1;
+}
+
+.condo-input-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9ca3af;
+}
+
+.condo-input-number {
+    width: 100%;
+    padding: 0.65rem 1rem 0.65rem 2.4rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 9999px;
+    font-size: 0.9rem;
+    background-color: #ffffff;
+    color: #111827;
+    outline: none;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+    transition: all 0.2s ease;
+}
+
+.condo-input-number:focus {
+    border-color: #3066be;
+    box-shadow: 0 0 0 3px rgba(48, 102, 190, 0.1);
+}
+
+/* Botón de envío corporativo */
+.condo-btn-submit {
+    padding: 0.65rem 1.5rem;
+    background-color: #0c447c;
+    color: #ffffff;
+    border: none;
+    border-radius: 9999px;
+    font-size: 0.9rem;
+    fontWeight: 600;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(12, 68, 124, 0.15);
+    transition: background-color 0.2s ease;
+}
+
+.condo-btn-submit:hover {
+    background-color: #3066be;
+}
+
+/* Tarjeta Principal de Resultados */
+.condo-result-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.condo-title {
+    fontSize: 1.25rem;
+    color: #0c447c;
+    margin-bottom: 0.5rem;
+}
+
+.condo-subtitle {
+    fontSize: 0.85rem;
+    color: #6b7280;
+    margin-bottom: 1.5rem;
+}
+
+/* Mini-Métricas superiores */
+.condo-mini-metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.condo-mini-card {
+    background: #f9fafb;
+    border: 1px solid #f3f4f6;
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+}
+
+.condo-mini-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #111827;
+}
+
+.condo-mini-label {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-top: 2px;
+    font-weight: 500;
+}
+
+/* Sección de Desglose de Torres */
+.condo-section-header {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #4b5563;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.75rem;
+}
+
+.condo-torres-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1rem;
+}
+
+.condo-torre-card {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.condo-torre-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 0.75rem;
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 0.25rem;
+}
+
+.condo-torre-count {
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: #6b7280;
+}
+
+.condo-unidad-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px dashed #e5e7eb;
+    font-size: 0.825rem;
+    color: #4b5563;
+}
+
+.condo-unidad-number {
+    font-weight: 600;
+}
+
+.condo-unidad-desc {
+    color: #6b7280;
+}

@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
+import '../css/Finanzas.css';
 
 export default function Finanzas() {
   const [mesActual, setMesActual] = useState(new Date().getMonth() + 1);
   const [anioActual, setAnioActual] = useState(new Date().getFullYear());
-  
-  // Estados para datos del Backend
+
+  // Estados unificados para datos del Backend
   const [cobros, setCobros] = useState([]);
   const [tarifas, setTarifas] = useState([]);
   const [tiposUnidad, setTiposUnidad] = useState([]);
@@ -21,38 +22,34 @@ export default function Finanzas() {
     cargarDatos();
   }, [mesActual, anioActual]);
 
-const cargarDatos = async () => {
+  const cargarDatos = async () => {
     setLoading(true);
     try {
-      // 1. Cargar Cobros
-      const resCobros = await fetch(`http://localhost:9000/api/bff/contabilidad/cobros-detallados?mes=${mesActual}&anio=${anioActual}`);
+      const resCobros = await fetch(`/api/bff/contabilidad/cobros-detallados?mes=${mesActual}&anio=${anioActual}`);
       if (resCobros.ok) setCobros(await resCobros.json());
 
-      // 2. Cargar Tipos de Unidad
-      const resTipos = await fetch(`http://localhost:9000/api/bff/registro/tipos-unidad`);
+      const resTipos = await fetch(`/api/bff/registro/tipos-unidad`);
       if (resTipos.ok) setTiposUnidad(await resTipos.json());
 
-      // 3. Cargar Tarifas configuradas
-      const resTarifas = await fetch(`http://localhost:9000/api/bff/contabilidad/tarifas`);
+      const resTarifas = await fetch(`/api/bff/contabilidad/tarifas`);
       if (resTarifas.ok) setTarifas(await resTarifas.json());
 
     } catch (error) {
-      console.error("Error cargando datos:", error);
+      console.error("Error cargando datos financieros:", error);
     } finally {
       setLoading(false);
     }
   };
 
-
   const generarBoletasMes = async () => {
     if (!window.confirm(`¿Estás seguro de generar todas las deudas para el mes ${mesActual}/${anioActual}?`)) return;
-    
+
     setGenerando(true);
     try {
       const response = await fetch(`/api/bff/contabilidad/generar-mes?mes=${mesActual}&anio=${anioActual}`, {
         method: 'POST'
       });
-      
+
       if (response.ok) {
         alert("¡Boletas generadas con éxito!");
         cargarDatos(); // Recargar la tabla para ver los nuevos cobros
@@ -68,20 +65,19 @@ const cargarDatos = async () => {
     }
   };
 
-  // --- NUEVA FUNCIÓN CONECTADA ---
   const marcarComoPagado = async (idCobro) => {
     try {
-      const response = await fetch(`/api/bff/contabilidad/cobros/${idCobro}/estado?estado=PAGADO`, { 
-        method: 'PATCH' 
+      const response = await fetch(`/api/bff/contabilidad/cobros/${idCobro}/estado?estado=PAGADO`, {
+        method: 'PATCH'
       });
-      
+
       if (response.ok) {
-        setCobros(cobros.map(c => 
-          c.idCobro === idCobro ? { ...c, estado: 'PAGADO' } : c
+        setCobros(cobros.map(c =>
+            c.idCobro === idCobro ? { ...c, estado: 'PAGADO' } : c
         ));
       }
     } catch (error) {
-      console.error("Error al pagar:", error);
+      console.error("Error al registrar pago:", error);
     }
   };
 
@@ -128,24 +124,24 @@ return (
       <div className="dashboard-card" style={{ marginBottom: '20px', padding: '20px' }}>
         <h3>1. Tarifas Base (Gastos Comunes)</h3>
         <p style={{ color: '#666', fontSize: '14px' }}>Configura el valor a cobrar por cada tipo de unidad antes de generar las boletas.</p>
-        
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginTop: '15px' }}>
-          
-        {tiposUnidad.length === 0 ? (
-             <span style={{color: '#888'}}>Cargando tipos de unidad...</span>
-          ) : (
-             tiposUnidad.map((tipo) => {
-               // Buscamos si el microservicio nos mandó una tarifa para este tipo
-               const tarifaEncontrada = tarifas.find(t => t.idTipoUnidad === tipo.id);
-               // Si no hay, le ponemos 0
-               const montoMostrar = tarifaEncontrada ? tarifaEncontrada.monto : 0;
 
-               return (
-                 <div key={tipo.id} style={{ padding: '10px', background: '#f8f9fa', borderRadius: '5px', border: '1px solid #ddd' }}>
-                   <strong>{tipo.nombre}:</strong> ${montoMostrar.toLocaleString('es-CL')}
-                 </div>
-               );
-             })
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginTop: '15px' }}>
+
+          {tiposUnidad.length === 0 ? (
+            <span style={{ color: '#888' }}>Cargando tipos de unidad...</span>
+          ) : (
+            tiposUnidad.map((tipo) => {
+              // Buscamos si el microservicio nos mandó una tarifa para este tipo
+              const tarifaEncontrada = tarifas.find(t => t.idTipoUnidad === tipo.id);
+              // Si no hay, le ponemos 0
+              const montoMostrar = tarifaEncontrada ? tarifaEncontrada.monto : 0;
+
+              return (
+                <div key={tipo.id} style={{ padding: '10px', background: '#f8f9fa', borderRadius: '5px', border: '1px solid #ddd' }}>
+                  <strong>{tipo.nombre}:</strong> ${montoMostrar.toLocaleString('es-CL')}
+                </div>
+              );
+            })
           )}
 
           <button className="btn-primary" onClick={abrirModalTarifa} style={{ marginLeft: 'auto' }}>
@@ -154,119 +150,125 @@ return (
         </div>
       </div>
 
-      {/* --- SECCIÓN 2: GENERACIÓN DE BOLETAS --- */}
-      <div className="dashboard-card" style={{ marginBottom: '20px', padding: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
-          <h3>2. Generación Mensual</h3>
-          <p style={{ color: '#666', fontSize: '14px' }}>Genera las deudas para todos los departamentos correspondientes a <strong>Mes {mesActual} / Año {anioActual}</strong>.</p>
+      {/* --- SECCIÓN 2: GENERACIÓN DE BOLETAS MASIVAS --- */}
+      <div className="finanzas-dashboard-card action-trigger-card">
+        <div className="action-card-text">
+          <h3 className="card-section-title">2. Emisión en Lote de Gastos Comunes</h3>
+          <p className="card-section-subtitle">
+            Dispara el cobro automático para todas las unidades correspondientes al periodo <strong>{mesActual}/{anioActual}</strong>.
+          </p>
         </div>
-        <button 
-          className="btn-success" 
+        <button
+          className="btn-finanzas btn-finanzas-success massive-action-btn"
           onClick={generarBoletasMes}
           disabled={generando}
-          style={{ padding: '12px 24px', fontSize: '16px', opacity: generando ? 0.7 : 1, cursor: generando ? 'not-allowed' : 'pointer' }}
         >
-          {generando ? 'Generando...' : 'Generar Boletas del Mes'}
+          {generando ? 'Emitiendo Boletas...' : 'Generar Boletas del Mes'}
         </button>
       </div>
 
-      {/* --- SECCIÓN 3: TABLA DE GESTIÓN --- */}
-      <div className="dashboard-card" style={{ padding: '20px' }}>
-        <h3>3. Estado de Cobros</h3>
-        
+      {/* --- SECCIÓN 3: REGISTRO GENERAL DE COBROS --- */}
+      <div className="finanzas-dashboard-card table-card">
+        <h3 className="card-section-title">3. Estado Analítico de Cuentas</h3>
+
         {loading ? (
-          <div style={{ padding: '20px', textAlign: 'center', color: '#666' }}>Cargando información...</div>
+          <div className="table-loading-spinner">Sincronizando deudas con el libro contable...</div>
         ) : (
-          <table style={{ width: '100%', marginTop: '15px', borderCollapse: 'collapse', textAlign: 'left' }}>
-            <thead>
-              <tr style={{ borderBottom: '2px solid #eee' }}>
-                <th style={{ padding: '10px' }}>Condominio</th>
-                <th style={{ padding: '10px' }}>Torre</th>
-                <th style={{ padding: '10px' }}>Depto</th>
-                <th style={{ padding: '10px' }}>Tipo</th>
-                <th style={{ padding: '10px' }}>Inquilino</th>
-                <th style={{ padding: '10px' }}>Monto</th>
-                <th style={{ padding: '10px' }}>Estado</th>
-                <th style={{ padding: '10px' }}>Acción</th>
-              </tr>
-            </thead>
-            <tbody>
-              {cobros.length === 0 ? (
+          <div className="finanzas-table-responsive">
+            <table className="finanzas-data-table">
+              <thead>
                 <tr>
-                  <td colSpan="8" style={{ textAlign: 'center', padding: '20px', color: '#888' }}>
-                    No hay cobros generados para este mes.
-                  </td>
+                  <th>Condominio</th>
+                  <th>Torre</th>
+                  <th>Nº Unidad</th>
+                  <th>Tipo</th>
+                  <th>Residente</th>
+                  <th>Monto Cobrado</th>
+                  <th>Estado</th>
+                  <th>Operaciones</th>
                 </tr>
-              ) : (
-                cobros.map((cobro) => (
-                  <tr key={cobro.idCobro} style={{ borderBottom: '1px solid #eee' }}>
-                    <td style={{ padding: '10px' }}>{cobro.nombreCondominio}</td>
-                    <td style={{ padding: '10px' }}>{cobro.numeroTorre}</td>
-                    <td style={{ padding: '10px' }}>{cobro.numeroUnidad}</td>
-                    <td style={{ padding: '10px' }}>{cobro.tipoUnidad}</td>
-                    <td style={{ padding: '10px' }}>{cobro.nombreInquilino}</td>
-                    <td style={{ padding: '10px' }}>${cobro.monto.toLocaleString('es-CL')}</td>
-                    <td style={{ padding: '10px' }}>
-                      <span style={{ 
-                        padding: '4px 8px', borderRadius: '12px', fontSize: '12px', fontWeight: 'bold',
-                        backgroundColor: cobro.estado === 'PAGADO' ? '#c6f6d5' : cobro.estado === 'VENCIDO' ? '#fed7d7' : '#feebc8',
-                        color: cobro.estado === 'PAGADO' ? '#22543d' : cobro.estado === 'VENCIDO' ? '#822727' : '#7b341e'
-                      }}>
-                        {cobro.estado}
-                      </span>
-                    </td>
-                    <td style={{ padding: '10px' }}>
-                      {cobro.estado === 'PENDIENTE' && (
-                        <button style={{ padding: '5px 10px', background: '#48bb78', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }} 
-                                onClick={() => marcarComoPagado(cobro.idCobro)}>
-                          ✓ Pagar
-                        </button>
-                      )}
+              </thead>
+              <tbody>
+                {cobros.length === 0 ? (
+                  <tr>
+                    <td colSpan="8" className="table-empty-fallback">
+                      No se han emitido cobros o deudas para este periodo mensual.
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ) : (
+                  cobros.map((cobro) => (
+                    <tr key={cobro.idCobro}>
+                      <td>{cobro.nombreCondominio}</td>
+                      <td>Torre {cobro.numeroTorre}</td>
+                      <td className="fw-bold">{cobro.numeroUnidad}</td>
+                      <td><span className="type-tag">{cobro.tipoUnidad}</span></td>
+                      <td>{cobro.nombreInquilino || "Sin Residente Asignado"}</td>
+                      <td className="fw-bold text-money">${cobro.monto.toLocaleString('es-CL')}</td>
+                      <td>
+                        <span className={`status-pill pill-${cobro.estado.toLowerCase()}`}>
+                          {cobro.estado}
+                        </span>
+                      </td>
+                      <td>
+                        {cobro.estado === 'PENDIENTE' && (
+                          <button className="btn-table-action btn-pay-now" onClick={() => marcarComoPagado(cobro.idCobro)}>
+                            ✓ Marcar Pagado
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 
-      {/* --- MODAL (ALERT) DE TARIFAS --- */}
+      {/* --- MODAL DE TARIFAS (Limpio y unificado) --- */}
       {isModalOpen && (
         <div style={{
-          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, 
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
           backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000
         }}>
           <div style={{ background: 'white', padding: '30px', borderRadius: '8px', width: '400px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
             <h3 style={{ marginTop: 0 }}>Actualizar Tarifa</h3>
             <p style={{ fontSize: '14px', color: '#666' }}>Esta tarifa se aplicará a todas las boletas que se generen a partir de ahora.</p>
-            
-            <div style={{ marginBottom: '15px' }}>
-              <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Tipo de Unidad:</label>
-              
-              {/* AQUÍ ESTÁ EL SEGUNDO CAMBIO: El select ahora se llena con los datos reales */}
-              <select style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
-                      value={tarifaEditando.idTipoUnidad} 
-                      onChange={(e) => setTarifaEditando({...tarifaEditando, idTipoUnidad: e.target.value})}>
-                <option value="">Seleccione un tipo...</option>
+
+            <div className="modal-form-group">
+              <label>Tipo de Unidad Destino:</label>
+              <select
+                className="modal-select"
+                value={tarifaEditando.idTipoUnidad}
+                onChange={(e) => setTarifaEditando({ ...tarifaEditando, idTipoUnidad: e.target.value })}
+                style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc', marginBottom: '15px' }}
+              >
+                <option value="">Seleccione el tipo...</option>
                 {tiposUnidad.map((tipo) => (
-                   <option key={tipo.id} value={tipo.id}>{tipo.nombre}</option>
+                  <option key={tipo.id} value={tipo.id}>{tipo.nombre}</option>
                 ))}
               </select>
             </div>
 
-            <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Monto a Cobrar ($):</label>
-              <input type="number" style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
-                     value={tarifaEditando.monto} 
-                     onChange={(e) => setTarifaEditando({...tarifaEditando, monto: e.target.value})} />
+            <div className="modal-form-group">
+              <label>Monto Mensual ($):</label>
+              <input
+                type="number"
+                className="modal-input"
+                placeholder="Ej: 65000"
+                value={tarifaEditando.monto}
+                onChange={(e) => setTarifaEditando({ ...tarifaEditando, monto: e.target.value })}
+                style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc', marginBottom: '20px' }}
+              />
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-              <button style={{ padding: '8px 15px', background: '#e2e8f0', border: 'none', borderRadius: '4px', cursor: 'pointer' }} 
-                      onClick={() => setIsModalOpen(false)}>Cancelar</button>
-              <button style={{ padding: '8px 15px', background: '#3182ce', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }} 
-                      onClick={guardarTarifa}>Confirmar Cambio</button>
+            <div className="modal-actions-row" style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+              <button className="btn-finanzas btn-finanzas-secondary" onClick={() => setIsModalOpen(false)} style={{ padding: '8px 15px', background: '#e2e8f0', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+                Cancelar
+              </button>
+              <button className="btn-finanzas btn-finanzas-primary" onClick={guardarTarifa} style={{ padding: '8px 15px', background: '#3182ce', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+                Confirmar Tarifa
+              </button>
             </div>
           </div>
         </div>

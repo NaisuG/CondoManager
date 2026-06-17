@@ -1,101 +1,100 @@
 import { useState } from "react";
+import "../css/Condominio.css"; // Importación obligatoria del nuevo CSS
 
 export default function PaginaCondominio() {
-  const [id, setId] = useState("");
-  const [condo, setCondo] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+    const [id, setId] = useState("");
+    const [condo, setCondo] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
 
-  const buscar = () => {
-    if (!id) return;
-    setLoading(true);
-    setCondo(null);
-    setError(null);
-    fetch(`http://localhost:9000/api/bff/registro/condominio/${id}`)
-      .then((r) => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        return r.json();
-      })
-      .then(setCondo)
-      .catch((e) => setError(e.message))
-      .finally(() => setLoading(false));
-  };
+    const buscar = () => {
+        if (!id) return;
+        setLoading(true);
+        setCondo(null);
+        setError(null);
 
-  const totalUnidades = condo
-    ? condo.torres.reduce((s, t) => s + t.unidades.length, 0)
-    : 0;
-  const totalM2 = condo
-    ? Math.round(condo.torres.reduce((s, t) => s + t.unidades.reduce((ss, u) => ss + u.m2, 0), 0))
-    : 0;
+        fetch(`/api/bff/registro/condominio/${id}`)
+            .then((r) => {
+                if (!r.ok) throw new Error(`HTTP ${r.status}`);
+                return r.json();
+            })
+            .then(setCondo)
+            .catch((e) => setError(e.message))
+            .finally(() => setLoading(false));
+    };
 
-  return (
-    <div>
-      <div className="page-title">Detalle de condominio</div>
+    const totalUnidades = condo
+        ? condo.torres.reduce((s, t) => s + t.unidades.length, 0)
+        : 0;
+    const totalM2 = condo
+        ? Math.round(condo.torres.reduce((s, t) => s + t.unidades.reduce((ss, u) => ss + u.m2, 0), 0))
+        : 0;
 
-      <div style={{ display: "flex", gap: 10, marginBottom: "1.5rem" }}>
-        <input
-          style={{ flex: 1 }}
-          type="number"
-          placeholder="ID del condominio..."
-          value={id}
-          onChange={(e) => setId(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && buscar()}
-        />
-        <button className="btn btn-primary" onClick={buscar}>Buscar</button>
-      </div>
+    return (
+        <div className="condo-contenedor">
+            <div className="page-title" style={{ fontSize: "1.5rem", fontWeight: "700", color: "#0c447c", marginBottom: "1.5rem" }}>
+                Buscador de Copropiedades
+            </div>
 
-      {error && <div className="error-msg">Error: {error}</div>}
-      {loading && <div className="loading">Cargando...</div>}
-      {!condo && !loading && !error && (
-        <div className="empty-state">Ingresa un ID para buscar un condominio.</div>
-      )}
-
-      {condo && (
-        <div className="card">
-          <div style={{ marginBottom: "1rem", paddingBottom: "1rem", borderBottom: "1px solid #e5e5e5" }}>
-            <div style={{ fontSize: 18, fontWeight: 600 }}>{condo.nombre}</div>
-            <div style={{ fontSize: 13, color: "#888", marginTop: 4 }}>{condo.direccion}</div>
-          </div>
-
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 10, marginBottom: "1.25rem" }}>
-            {[
-              { val: condo.torres.length, lbl: "Torres" },
-              { val: totalUnidades, lbl: "Unidades" },
-              { val: `${totalM2} m²`, lbl: "Total construido" },
-            ].map(({ val, lbl }) => (
-              <div key={lbl} style={{ background: "#f5f5f3", borderRadius: 8, padding: "0.75rem 1rem" }}>
-                <div style={{ fontSize: 22, fontWeight: 600 }}>{val}</div>
-                <div style={{ fontSize: 12, color: "#888", marginTop: 2 }}>{lbl}</div>
-              </div>
-            ))}
-          </div>
-
-          <div style={{ fontSize: 11, fontWeight: 500, color: "#888", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 10 }}>
-            Torres y unidades
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 10 }}>
-            {condo.torres.map((t) => (
-              <div key={t.numero} style={{ background: "#f5f5f3", borderRadius: 10, padding: "1rem" }}>
-                <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 10 }}>
-                  Torre {t.numero}{" "}
-                  <span style={{ fontSize: 12, fontWeight: 400, color: "#888" }}>
-                    ({t.unidades.length} unidades)
-                  </span>
+            <div className="condo-search-bar">
+                <div className="condo-input-wrapper">
+                    <input
+                        type="number"
+                        placeholder="Ingrese el ID único del condominio..."
+                        value={id}
+                        onChange={(e) => setId(e.target.value)}
+                        className="condo-input-number"
+                    />
                 </div>
-                {t.unidades.map((u) => (
-                  <div
-                    key={u.numero}
-                    style={{ display: "flex", justifyContent: "space-between", padding: "5px 0", borderBottom: "1px solid #e5e5e5", fontSize: 13 }}
-                  >
-                    <span style={{ fontWeight: 500 }}>Unidad {u.numero}</span>
-                    <span style={{ color: "#888" }}>{u.tipo} · {u.m2} m²</span>
-                  </div>
-                ))}
-              </div>
-            ))}
-          </div>
+                <button onClick={buscar} className="condo-btn-submit">
+                    Consultar
+                </button>
+            </div>
+
+            {loading && <div className="loading">Consultando registros en la base de datos...</div>}
+            {error && <div className="error-msg">No se encontró ningún condominio con el ID ingresado.</div>}
+
+            {condo && (
+                <div className="condo-result-card">
+                    <h2 className="condo-title">{condo.nombre}</h2>
+                    <div className="condo-subtitle">{condo.direccion || "Dirección no registrada"}</div>
+
+                    <div className="condo-mini-metrics-grid">
+                        <div className="condo-mini-card">
+                            <div className="condo-mini-value">{condo.torres.length}</div>
+                            <div className="condo-mini-label">Torres Edificadas</div>
+                        </div>
+                        <div className="condo-mini-card">
+                            <div className="condo-mini-value">{totalUnidades}</div>
+                            <div className="condo-mini-label">Unidades Habitables</div>
+                        </div>
+                        <div className="condo-mini-card">
+                            <div className="condo-mini-value">{totalM2} m²</div>
+                            <div className="condo-mini-label">Superficie Construida</div>
+                        </div>
+                    </div>
+
+                    <div className="condo-section-header">
+                        Estructura de Torres y Departamentos
+                    </div>
+
+                    <div className="condo-torres-grid">
+                        {condo.torres.map((t) => (
+                            <div key={t.numero} className="condo-torre-card">
+                                <div className="condo-torre-title">
+                                    Torre {t.numero} <span className="condo-torre-count">({t.unidades.length} u.)</span>
+                                </div>
+                                {t.unidades.map((u) => (
+                                    <div key={u.numero} className="condo-unidad-item">
+                                        <span className="condo-unidad-number">N° {u.numero}</span>
+                                        <span className="condo-unidad-desc">{u.tipo} ({u.m2} m²)</span>
+                                    </div>
+                                ))}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
         </div>
-      )}
-    </div>
-  );
+    );
 }

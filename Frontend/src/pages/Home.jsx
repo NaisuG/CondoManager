@@ -4,12 +4,14 @@ import Hero from "../components/Hero";
 import Services from "../components/Services";
 import "../css/Home.css";
 
-export default function PaginaHome({ alIrAlLogin }) {
+export default function PaginaHome({ estaLogueado, alIrAlLogin, alIrAlPanel }) {
+    const manejarAccionPrincipal = estaLogueado ? alIrAlPanel : alIrAlLogin;
+
     return (
-        <div className="home-public-container" style={{ background: "#fff", width: "100%", minHeight: "100vh" }}>
-            <Navbar alIngresar={alIrAlLogin} />
+        <div className="home-public-container">
+            <Navbar alIngresar={manejarAccionPrincipal} estaLogueado={estaLogueado} />
             <main>
-                <Hero alIngresar={alIrAlLogin} />
+                <Hero alIngresar={manejarAccionPrincipal} estaLogueado={estaLogueado} />
                 <Services />
             </main>
         </div>

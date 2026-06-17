@@ -1,86 +1,75 @@
 import { useState } from "react";
 import PaginaHome from "./pages/Home";
 import PaginaAuth from "./pages/Auth";
-import PaginaOrdenes from "./pages/Ordenes";
-import PaginaCondominio from "./pages/Condominio";
 import PaginaDashboard from "./pages/Dashboard";
 import PaginaFinanzas from "./pages/Finanzas";
+import PaginaOrdenes from "./pages/Ordenes";
+import PaginaCondominio from "./pages/Condominio";
+import Sidebar from "./components/Sidebar";
+import NavbarPrivado from "./components/NavbarPriv";
 import "./App.css";
 
 export default function App() {
-  //controlar si el usuario inicio sesion
   const [estaLogueado, setEstaLogueado] = useState(() => {
-    // existe un token guardado en el navegador
     return !!localStorage.getItem("token_jwt");
   });
 
-
   const [view, setView] = useState("home");
-  const [page, setPage] = useState("dashboard"); // menu del panel privado
+  const [page, setPage] = useState("dashboard");
 
-  //cerrar sesion
   const handleLogout = () => {
     localStorage.removeItem("token_jwt");
     setEstaLogueado(false);
     setView("home");
   };
 
-//sin iniciar
-  if (!estaLogueado) {
-    if (view === "auth") {
-      return (
-          <PaginaAuth
-              alLoguearse={() => setEstaLogueado(true)}
-              alVolverAlHome={() => setView("home")}
-          />
-      );
-    }
-    // Home por defecto
-    return <PaginaHome alIrAlLogin={() => setView("auth")} />;
+  // VISTA 1: Home Público (Paso obligado al cargar la página)
+  if (view === "home") {
+    return (
+        <PaginaHome
+            estaLogueado={estaLogueado}
+            alIrAlLogin={() => setView("auth")}
+            alIrAlPanel={() => setView("panel_privado")}
+        />
+    );
   }
 
-//usuario logueado
-  return (
-      <div className="app">
-        <aside className="sidebar">
-          <div className="sidebar-brand">Condominio</div>
-          <nav className="sidebar-nav">
-          <span
-              className={`sidebar-link ${page === "dashboard" ? "active" : ""}`}
-              onClick={() => setPage("dashboard")}
-          >
-            Dashboard
-          </span>
-          <span
-            className={`sidebar-link ${page === "finanzas" ? "active" : ""}`}
-            onClick={() => setPage("finanzas")}
-          >
-            Finanzas
-          </span>
-          <span
-            className={`sidebar-link ${page === "ordenes" ? "active" : ""}`}
-            onClick={() => setPage("ordenes")}
-          >
-            Mantenimientos
-          </span>
-            <span
-                className={`sidebar-link ${page === "condo" ? "active" : ""}`}
-                onClick={() => setPage("condo")}
-            >
-            Registro condominio
-          </span>
-            {/* Botón para salir */}
-          <span className="sidebar-link" onClick={handleLogout} style={{ marginTop: "auto", color: "#ff8484" }}>
-            Cerrar Sesión
-          </span>
-        </nav>
-      </aside>
-      <main className="main">
-        {page === "dashboard" && <PaginaDashboard />}
-        {page === "finanzas" && <PaginaFinanzas />}
-        {page === "ordenes" && <PaginaOrdenes />}
-        {page === "condo" && <PaginaCondominio />}
-      </main>
-    </div>
-  );
+  // VISTA 2: Autenticación (Login / Registro)
+  if (view === "auth") {
+    return (
+        <PaginaAuth
+            alLoguearse={() => {
+              setEstaLogueado(true);
+              setView("panel_privado");
+            }}
+            alVolverAlHome={() => setView("home")}
+        />
+    );
+  }
+
+  // VISTA 3: Panel Privado Estructurado Modularmente
+  if (view === "panel_privado" && estaLogueado) {
+    return (
+        <div className="dashboard-layout">
+          <Sidebar
+              pageActiva={page}
+              setPage={setPage}
+              alCerrarSesion={handleLogout}
+          />
+
+          <div className="dashboard-main-container">
+            <NavbarPrivado pageActiva={page} />
+
+            <main className="dashboard-content">
+              {page === "dashboard" && <PaginaDashboard />}
+              {page === "finanzas" && <PaginaFinanzas />}
+              {page === "ordenes" && <PaginaOrdenes />}
+              {page === "condo" && <PaginaCondominio />}
+            </main>
+          </div>
+        </div>
+    );
+  }
+
+  return <PaginaHome estaLogueado={estaLogueado} alIrAlLogin={() => setView("auth")} alIrAlPanel={() => setView("panel_privado")} />;
 }

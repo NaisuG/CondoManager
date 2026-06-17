@@ -18,7 +18,7 @@ export default function PaginaAuth({ alLoguearse, alVolverAlHome }) {
 
         const endpoint = esLogin ? "/api/bff/auth/login" : "/api/bff/auth/register";
 
-        //envia las variables
+        // Envia las variables
         const bodyPayload = esLogin
             ? { email, password }
             : { email, password, nombre, apellido, rol };
@@ -34,11 +34,28 @@ export default function PaginaAuth({ alLoguearse, alVolverAlHome }) {
             })
             .then((data) => {
                 if (esLogin) {
+                    // 1. Guardamos el token de autenticación original
                     localStorage.setItem("token_jwt", data.token);
+
+                    /* 2. CLAVE PARA EL NAVBAR: Creamos el objeto con los datos de la base de datos.
+                       Si tu backend ya devuelve nombre/apellido en el 'data', los usará directamente.
+                       Si no vienen, dejamos valores de respaldo basados en los inputs del formulario.
+                    */
+                    const datosUsuario = {
+                        nombre: data.nombre || nombre || "Usuario",
+                        apellido: data.apellido || apellido || "",
+                        rol: (data.rol || rol) === "ROL_ADMIN" ? "Manager" : "Residente",
+                        avatarUrl: data.avatarUrl || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80"
+                    };
+
+                    // Sincronizamos el disco con la estructura exacta que lee tu barra privada
+                    localStorage.setItem("usuario_sesion", JSON.stringify(datosUsuario));
+
+                    // 3. Cambiamos el estado de la aplicación
                     alLoguearse();
                 } else {
                     setMensaje("¡Usuario registrado con éxito! Ya puedes iniciar sesión.");
-                    // limpia los campos para hacer el login
+                    // Limpia los campos para hacer el login
                     setNombre("");
                     setApellido("");
                     setEmail("");

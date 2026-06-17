@@ -1,0 +1,358 @@
+.finanzas-page-container {
+    padding: 30px;
+    max-width: 1400px;
+    margin: 0 auto;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background-color: #f7fafc;
+    min-height: 100vh;
+}
+
+.finanzas-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.finanzas-main-title {
+    font-size: 26px;
+    font-weight: 700;
+    color: #2d3748;
+    margin: 0;
+}
+
+/* Selector de periodo elegante */
+.period-selector-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: white;
+    padding: 8px 16px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+    border: 1px solid #e2e8f0;
+}
+
+.period-selector-card label {
+    font-weight: 600;
+    color: #4a5568;
+    font-size: 14px;
+}
+
+.period-input {
+    width: 45px;
+    padding: 5px;
+    border: 1px solid #cbd5e0;
+    border-radius: 4px;
+    text-align: center;
+    font-weight: bold;
+    color: #2b6cb0;
+}
+
+.period-input.anio {
+    width: 65px;
+}
+
+/* Tarjetas base Dashboard */
+.finanzas-dashboard-card {
+    background: white;
+    border-radius: 10px;
+    padding: 24px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.02), 0 1px 3px rgba(0,0,0,0.02);
+    border: 1px solid #e2e8f0;
+    margin-bottom: 20px;
+}
+
+.card-section-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1a202c;
+    margin: 0 0 4px 0;
+}
+
+.card-section-subtitle {
+    font-size: 14px;
+    color: #718096;
+    margin: 0;
+}
+
+/* Badges de tarifas dinámicas */
+.tarifas-status-flex {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+}
+
+.tarifa-badge-box {
+    display: flex;
+    flex-direction: column;
+    padding: 10px 18px;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+    min-width: 150px;
+}
+
+.tarifa-badge-box.pendiente {
+    background-color: #fff5f5;
+    border-color: #fed7d7;
+}
+
+.tarifa-badge-box.pendiente .badge-value {
+    color: #c53030;
+}
+
+.tarifa-badge-box.completado {
+    background-color: #f0fff4;
+    border-color: #c6f6d5;
+}
+
+.tarifa-badge-box.completado .badge-value {
+    color: #22543d;
+}
+
+.badge-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #718096;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.badge-value {
+    font-size: 16px;
+    font-weight: 700;
+    margin-top: 2px;
+}
+
+/* Botones globales de Finanzas */
+.btn-finanzas {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-finanzas-primary {
+    background-color: #3182ce;
+    color: white;
+}
+
+.btn-finanzas-primary:hover {
+    background-color: #2b6cb0;
+}
+
+.btn-finanzas-secondary {
+    background-color: #e2e8f0;
+    color: #4a5568;
+}
+
+.btn-finanzas-secondary:hover {
+    background-color: #cbd5e0;
+}
+
+.btn-finanzas-success {
+    background-color: #38a169;
+    color: white;
+}
+
+.btn-finanzas-success:hover:not(:disabled) {
+    background-color: #2f855a;
+}
+
+.btn-add-tarifa {
+    margin-left: auto;
+}
+
+/* Estado de tarjeta bloqueada en frontend */
+.action-trigger-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.action-trigger-card.bloqueado {
+    background-color: #f7fafc;
+    border-left: 4px solid #e53e3e;
+}
+
+.error-inline-msg {
+    display: block;
+    color: #e53e3e;
+    font-size: 13px;
+    font-weight: 600;
+    margin-top: 6px;
+}
+
+.massive-action-btn:disabled {
+    background-color: #cbd5e0;
+    color: #718096;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+/* Tablas financieras */
+.finanzas-table-responsive {
+    overflow-x: auto;
+    margin-top: 20px;
+}
+
+.finanzas-data-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.finanzas-data-table th {
+    background-color: #f7fafc;
+    color: #4a5568;
+    font-weight: 700;
+    font-size: 13px;
+    padding: 14px 16px;
+    border-bottom: 2px solid #e2e8f0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.finanzas-data-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid #edf2f7;
+    color: #4a5568;
+    font-size: 14px;
+}
+
+.finanzas-data-table tr:hover {
+    background-color: #f8fafc;
+}
+
+.fw-bold { font-weight: 600; }
+.text-money { color: #2d3748; }
+
+.type-tag {
+    background: #edf2f7;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* Status Pills */
+.status-pill {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    display: inline-block;
+}
+
+.pill-pendiente { background-color: #feebc8; color: #c05621; }
+.pill-pagado { background-color: #c6f6d5; color: #22543d; }
+.pill-vencido { background-color: #fed7d7; color: #9b2c2c; }
+
+/* Botones dentro de tablas */
+.btn-table-action {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-pay-now {
+    background-color: #e6fffa;
+    color: #234e52;
+    border: 1px solid #b2f5ea;
+}
+
+.btn-pay-now:hover {
+    background-color: #319795;
+    color: white;
+}
+
+.table-empty-fallback, .table-loading-spinner {
+    text-align: center;
+    padding: 40px !important;
+    color: #718096;
+    font-size: 15px;
+}
+
+/* Modal overlays */
+.modal-finanzas-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: rgba(26, 32, 44, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    backdrop-filter: blur(2px);
+}
+
+.modal-finanzas-box {
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    width: 440px;
+    box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+}
+
+.modal-title {
+    margin: 0 0 6px 0;
+    font-size: 20px;
+    color: #1a202c;
+}
+
+.modal-description {
+    margin: 0 0 20px 0;
+    font-size: 13px;
+    color: #718096;
+}
+
+.modal-form-group {
+    margin-bottom: 16px;
+}
+
+.modal-form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+    font-size: 13px;
+    color: #4a5568;
+}
+
+.modal-select, .modal-input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #cbd5e0;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #4a5568;
+    box-sizing: border-box;
+}
+
+.modal-select:focus, .modal-input:focus {
+    border-color: #3182ce;
+    outline: none;
+}
+
+.modal-actions-row {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 25px;
+}
+
+@keyframes pop {
+    from { transform: scale(0.95); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.animate-pop {
+    animation: pop 0.15s ease-out forwards;
+}
