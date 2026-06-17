@@ -171,7 +171,43 @@ services:
     depends_on:
       - db-auth
 
+  app-documentos:
+    build: ./documentos
+    container_name: ms_documentos
+    networks:
+      - app-network
+    ports:
+      - "8084:8084"
+    environment:
+      - SERVER_PORT=8084
+      - MINIO_URL=http://minio_storage:9000 
+      - MINIO_ACCESS_KEY=admin
+      - MINIO_SECRET_KEY=admin1234
+    depends_on:
+      - minio_storage
+
+  # ------------------------------------
+  # ALMACENAMIENTO S3 (MINIO)
+  # ------------------------------------
+  minio_storage:
+    image: minio/minio:latest
+    container_name: minio_storage
+    networks:
+      - app-network
+    ports:
+      - "9005:9000" # API de S3
+      - "9001:9001" # Consola Gráfica Web
+    environment:
+      - MINIO_ROOT_USER=admin
+      - MINIO_ROOT_PASSWORD=admin1234
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+
   # --- RED ---
 networks:
   app-network:
     driver: bridge
+
+volumes:
+  minio_data:
