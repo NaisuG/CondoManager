@@ -90,25 +90,46 @@ public class BffController {
         return bffService.listarTarifas();
     }
 
-    // --- NUEVOS ENDPOINTS DE DOCUMENTOS ---
-    @GetMapping("/documentos/condominio/{idCondominio}")
-    public Flux<Map> getDocumentos(@PathVariable Long idCondominio) {
-        return bffService.listarDocumentosPorCondominio(idCondominio);
-    }
-
-    @GetMapping("/documentos/{id}/descargar")
-    public Mono<Map> getLinkDescarga(@PathVariable Long id) {
-        return bffService.obtenerLinkDescarga(id);
+    @GetMapping("/documentos/condominio/{idCondominio}/categoria/{categoria}")
+    public Flux<Map> getDocumentosPorCategoria(@PathVariable Long idCondominio, @PathVariable String categoria) {
+        return bffService.listarDocumentosPorCategoria(idCondominio, categoria);
     }
 
     @PostMapping(value = "/documentos/subir", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
     public Mono<ResponseEntity<Map>> subirDocumento(
             @RequestParam("archivo") MultipartFile archivo,
             @RequestParam("idCondominio") Long idCondominio,
-            @RequestParam("idUsuarioSubio") Long idUsuarioSubio) {
+            @RequestParam("idUsuarioSubio") Long idUsuarioSubio,
+            @RequestParam("categoria") String categoria,
+            @RequestParam("periodo") String periodo) {
         
-        return bffService.subirDocumento(archivo, idCondominio, idUsuarioSubio)
+        return bffService.subirDocumento(archivo, idCondominio, idUsuarioSubio, categoria, periodo)
                 .map(resultado -> ResponseEntity.ok().body(resultado))
                 .onErrorResume(e -> Mono.just(ResponseEntity.status(500).body(Map.of("error", e.getMessage()))));
+    }
+
+    @PostMapping(value = "/contabilidad/cobros/{idCobro}/pagar", consumes = org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE)
+    public Mono<ResponseEntity<Object>> pagarConComprobante(
+            @PathVariable Long idCobro,
+            @RequestParam("archivo") MultipartFile archivo,
+            @RequestParam("idCondominio") Long idCondominio,
+            @RequestParam("idUsuarioSubio") Long idUsuarioSubio,
+            @RequestParam("periodo") String periodo) {
+        
+        return bffService.procesarPagoConComprobante(idCobro, archivo, idCondominio, idUsuarioSubio, periodo)
+                .map(res -> ResponseEntity.ok().body(res))
+                .onErrorResume(e -> Mono.just(ResponseEntity.status(500).body(Map.of("error", e.getMessage()))));
+    }
+
+    @PatchMapping("/contabilidad/cobros/{idCobro}/revertir")
+    public Mono<ResponseEntity<Object>> revertirPago(@PathVariable Long idCobro) {
+        return bffService.revertirPagoAPendiente(idCobro)
+                .map(res -> ResponseEntity.ok().body(res))
+                .onErrorResume(e -> Mono.just(ResponseEntity.status(500).body(Map.of("error", e.getMessage()))));
+    }
+
+    @GetMapping("/documentos/{id}/descargar")
+    public Mono<Map> getLinkDescarga(@PathVariable Long id) {
+        return bffService.obtenerLinkDescarga(id);
     }
 }

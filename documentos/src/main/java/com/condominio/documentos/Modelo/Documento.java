@@ -31,6 +31,9 @@ public class Documento {
     @Column(nullable = false)
     private LocalDateTime fechaSubida;
 
+    @Column(nullable = false)
+    private String categoria;
+
     @PrePersist
     protected void onCreate() {
         fechaSubida = LocalDateTime.now();

@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.condominio.documentos.Modelo.Documento;
 
 public interface DocumentoRepositorio extends JpaRepository<Documento, Long> {
-    List<Documento> findByIdCondominioOrderByFechaSubidaDesc(Long idCondominio);
+    List<Documento> findByIdCondominioAndCategoriaOrderByFechaSubidaDesc(Long idCondominio, String categoria);
     
     List<Documento> findByIdUsuarioSubioOrderByFechaSubidaDesc(Long idUsuarioSubio);
     

@@ -164,24 +164,29 @@ public class BffService {
                                 dto.setNumeroTorre(Integer.valueOf(detalleRegistro.getOrDefault("numeroTorre", 0).toString()));
                                 dto.setNombreCondominio(detalleRegistro.getOrDefault("nombreCondominio", "Desconocido").toString());
                                 dto.setNombreInquilino(detalleRegistro.getOrDefault("nombreResidente", "Sin asignar").toString());
+                                
+                                // EL FIX DEL ID: Rescatamos el idCondominio verdadero
+                                dto.setIdCondominio(detalleRegistro.get("idCondominio") != null ? Long.valueOf(detalleRegistro.get("idCondominio").toString()) : 1L);
+                                
                                 return dto;
                             }).onErrorReturn(crearCobroEnBlanco(cobro));
                 });
     }
 
     private CobroDetalleDTO crearCobroEnBlanco(Map cobro) {
-        CobroDetalleDTO dto = new CobroDetalleDTO();
-        dto.setIdCobro(Long.valueOf(cobro.get("id").toString()));
-        dto.setMes(Integer.valueOf(cobro.get("mes").toString()));
-        dto.setAnio(Integer.valueOf(cobro.get("anio").toString()));
-        dto.setMonto(Integer.valueOf(cobro.get("montoCobrado").toString()));
-        dto.setEstado(cobro.get("estado").toString());
-        dto.setNumeroUnidad(0);
-        dto.setTipoUnidad("N/A");
-        dto.setNumeroTorre(0);
-        dto.setNombreCondominio("N/A");
-        dto.setNombreInquilino("Sin asignar");
-        return dto;
+            CobroDetalleDTO dto = new CobroDetalleDTO();
+            dto.setIdCobro(Long.valueOf(cobro.get("id").toString()));
+            dto.setMes(Integer.valueOf(cobro.get("mes").toString()));
+            dto.setAnio(Integer.valueOf(cobro.get("anio").toString()));
+            dto.setMonto(Integer.valueOf(cobro.get("montoCobrado").toString()));
+            dto.setEstado(cobro.get("estado").toString());
+            dto.setNumeroUnidad(0);
+            dto.setTipoUnidad("N/A");
+            dto.setNumeroTorre(0);
+            dto.setNombreCondominio("N/A");
+            dto.setNombreInquilino("Sin asignar");
+            dto.setIdCondominio(1L);
+            return dto;
     }
 
     // --- DOCUMENTOS ---
@@ -196,28 +201,57 @@ public class BffService {
     }
 
     // --- SUBIDA DE DOCUMENTOS ---
-    public Mono<Map> subirDocumento(MultipartFile archivo, Long idCondominio, Long idUsuarioSubio) {
-        try {
-            MultipartBodyBuilder builder = new MultipartBodyBuilder();
-            
-            builder.part("archivo", new ByteArrayResource(archivo.getBytes()) {
-                @Override
-                public String getFilename() {
-                    return archivo.getOriginalFilename();
-                }
-            });
-            builder.part("idCondominio", idCondominio);
-            builder.part("idUsuarioSubio", idUsuarioSubio);
+    public Mono<Map> subirDocumento(MultipartFile archivo, Long idCondominio, Long idUsuarioSubio, String categoria, String periodo) {
+    try {
+        MultipartBodyBuilder builder = new MultipartBodyBuilder();
+        builder.part("archivo", new ByteArrayResource(archivo.getBytes()) {
+            @Override
+            public String getFilename() {
+                return archivo.getOriginalFilename();
+            }
+        });
+        builder.part("idCondominio", idCondominio);
+        builder.part("idUsuarioSubio", idUsuarioSubio);
+        builder.part("categoria", categoria);
+        builder.part("periodo", periodo);
 
-            return webClient.post()
-                    .uri(urlDocumentos + "/api/documentos/subir")
-                    .bodyValue(builder.build())
-                    .retrieve()
-                    .bodyToMono(Map.class)
-                    .onErrorResume(e -> Mono.error(new RuntimeException("Error en ms-documentos: " + e.getMessage())));
-                    
-        } catch (Exception e) {
-            return Mono.error(new RuntimeException("Error procesando el archivo en el BFF: " + e.getMessage()));
-        }
+        return webClient.post()
+                .uri(urlDocumentos + "/api/documentos/subir")
+                .bodyValue(builder.build())
+                .retrieve()
+                .bodyToMono(Map.class);
+    } catch (Exception e) {
+        return Mono.error(new RuntimeException("Error en BFF al procesar multipart: " + e.getMessage()));
     }
+    }
+
+    public Flux<Map> listarDocumentosPorCategoria(Long idCondominio, String categoria) {
+    return webClient.get()
+            .uri(urlDocumentos + "/api/documentos/condominio/" + idCondominio + "/categoria/" + categoria)
+            .retrieve()
+            .bodyToFlux(Map.class)
+            .onErrorResume(e -> Flux.empty());
+    }
+
+    public Mono<Object> procesarPagoConComprobante(Long idCobro, MultipartFile archivo, Long idCondominio, Long idUsuario, String periodo) {
+    return subirDocumento(archivo, idCondominio, idUsuario, "COMPROBANTE", periodo)
+            .flatMap(docGuardado -> {
+                // Extraemos el ID del documento generado
+                Long idDoc = Long.valueOf(docGuardado.get("id").toString());
+                
+                // Le pegamos a contabilidad enviando el estado PAGADO y vinculando el ID del documento
+                return webClient.patch()
+                        .uri(urlContabilidad + "/api/contabilidad/cobros/" + idCobro + "/registrar-pago?idDocumento=" + idDoc)
+                        .retrieve()
+                        .bodyToMono(Object.class);
+            });
+    }
+
+// Reversión de pago: Limpia el vínculo del documento en contabilidad y vuelve a PENDIENTE
+    public Mono<Object> revertirPagoAPendiente(Long idCobro) {
+    return webClient.patch()
+            .uri(urlContabilidad + "/api/contabilidad/cobros/" + idCobro + "/revertir")
+            .retrieve()
+            .bodyToMono(Object.class);
+}
 }

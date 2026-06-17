@@ -31,33 +31,39 @@ public class DocumentoServicio {
     @Value("${minio.secret.key}")
     private String secretKey;
 
-    public Documento subirDocumento(MultipartFile archivo, Long idCondominio, Long idUsuario) {
-        try {
-            String extension = archivo.getOriginalFilename().substring(archivo.getOriginalFilename().lastIndexOf("."));
-            String keyMinio = UUID.randomUUID().toString() + extension;
+    public Documento subirDocumento(MultipartFile archivo, Long idCondominio, Long idUsuario, String categoria, String periodo) {
+    try {
+        String extension = archivo.getOriginalFilename().substring(archivo.getOriginalFilename().lastIndexOf("."));
+        
+        String folder = (categoria.equals("COMPROBANTE")) 
+            ? "condominio-" + idCondominio + "/comprobantes/" + periodo + "/" 
+            : "condominio-" + idCondominio + "/general/";
+            
+        String keyMinio = folder + UUID.randomUUID().toString() + extension;
 
-            ObjectMetadata metadata = new ObjectMetadata();
-            metadata.setContentLength(archivo.getSize());
-            metadata.setContentType(archivo.getContentType());
+        ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setContentLength(archivo.getSize());
+        metadata.setContentType(archivo.getContentType());
 
-            s3Client.putObject(new PutObjectRequest(bucketName, keyMinio, archivo.getInputStream(), metadata));
+        s3Client.putObject(new PutObjectRequest(bucketName, keyMinio, archivo.getInputStream(), metadata));
 
-            Documento nuevoDoc = Documento.builder()
-                    .nombreOriginal(archivo.getOriginalFilename())
-                    .keyMinio(keyMinio)
-                    .idCondominio(idCondominio)
-                    .idUsuarioSubio(idUsuario)
-                    .build();
+        Documento nuevoDoc = Documento.builder()
+                .nombreOriginal(archivo.getOriginalFilename())
+                .keyMinio(keyMinio)
+                .idCondominio(idCondominio)
+                .idUsuarioSubio(idUsuario)
+                .categoria(categoria)
+                .build();
 
-            return documentoRepositorio.save(nuevoDoc);
+        return documentoRepositorio.save(nuevoDoc);
 
-        } catch (Exception e) {
-            throw new RuntimeException("Error al subir el archivo a MinIO: " + e.getMessage());
-        }
+    } catch (Exception e) {
+        throw new RuntimeException("Error al subir el archivo a MinIO: " + e.getMessage());
+    }
     }
 
-    public List<Documento> listarPorCondominio(Long idCondominio) {
-        return documentoRepositorio.findByIdCondominioOrderByFechaSubidaDesc(idCondominio);
+    public List<Documento> listarPorCondominioYCategoria(Long idCondominio, String categoria) {
+    return documentoRepositorio.findByIdCondominioAndCategoriaOrderByFechaSubidaDesc(idCondominio, categoria);
     }
 
     public String generarUrlDescarga(Long idDocumento) {

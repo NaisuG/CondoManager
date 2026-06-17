@@ -1,19 +1,22 @@
 import { useState, useEffect } from 'react';
-import '../css/Finanzas.css'; // Reutilizamos tu CSS corporativo
+import '../css/Finanzas.css'; 
 
 export default function Documentos() {
   const [condominios, setCondominios] = useState([]);
   const [condominioActivo, setCondominioActivo] = useState('');
-  const [documentos, setDocumentos] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Estados del Modal de Subida
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [archivoSubir, setArchivoSubir] = useState(null);
   const [condominioSubir, setCondominioSubir] = useState('');
   const [uploading, setUploading] = useState(false);
+  
+  const [docsGenerales, setDocsGenerales] = useState([]);
+  const [comprobantes, setComprobantes] = useState([]);
+  
+  // ESTADO PARA LA VISTA DE CARPETAS
+  const [carpetaActiva, setCarpetaActiva] = useState(null);
 
-  // 1. Al cargar la página, traemos todos los condominios disponibles
   useEffect(() => {
     fetch('/api/bff/registro/condominios')
       .then(res => res.json())
@@ -21,28 +24,37 @@ export default function Documentos() {
       .catch(err => console.error("Error cargando condominios:", err));
   }, []);
 
-  // 2. Cada vez que el admin selecciona un condominio, buscamos sus documentos
+  const cargarDocumentos = async (idCondominio) => {
+    setLoading(true);
+    setCarpetaActiva(null); 
+    try {
+      const resDocs = await fetch(`/api/bff/documentos/condominio/${idCondominio}/categoria/GENERAL`);
+      if (resDocs.ok) setDocsGenerales(await resDocs.json());
+
+      const resComprobantes = await fetch(`/api/bff/documentos/condominio/${idCondominio}/categoria/COMPROBANTE`);
+      if (resComprobantes.ok) setComprobantes(await resComprobantes.json());
+    } catch (error) {
+      console.error("Error al cargar archivos:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (!condominioActivo) {
-      setDocumentos([]);
+      setDocsGenerales([]);
+      setComprobantes([]);
       return;
     }
-    
-    setLoading(true);
-    fetch(`/api/bff/documentos/condominio/${condominioActivo}`)
-      .then(res => res.json())
-      .then(data => setDocumentos(data))
-      .catch(err => console.error("Error cargando documentos:", err))
-      .finally(() => setLoading(false));
+    cargarDocumentos(condominioActivo);
   }, [condominioActivo]);
 
-  // 3. Lógica para descargar archivo (Usa la URL pre-firmada de MinIO)
   const handleDownload = async (idDocumento) => {
     try {
       const res = await fetch(`/api/bff/documentos/${idDocumento}/descargar`);
       const data = await res.json();
       if (data.url) {
-        window.open(data.url, '_blank'); // Abre la descarga en una pestaña nueva
+        window.open(data.url, '_blank');
       } else {
         alert("No se pudo generar el enlace de descarga.");
       }
@@ -52,7 +64,6 @@ export default function Documentos() {
     }
   };
 
-  // 4. Lógica para subir un archivo nuevo
   const handleUpload = async (e) => {
     e.preventDefault();
     if (!archivoSubir || !condominioSubir) {
@@ -61,11 +72,12 @@ export default function Documentos() {
     }
 
     const idUsuario = localStorage.getItem("idUsuario") || 1; 
-
     const formData = new FormData();
     formData.append("archivo", archivoSubir);
     formData.append("idCondominio", condominioSubir);
     formData.append("idUsuarioSubio", idUsuario);
+    formData.append("categoria", "GENERAL");
+    formData.append("periodo", "general");
 
     setUploading(true);
     try {
@@ -75,14 +87,13 @@ export default function Documentos() {
       });
 
       if (res.ok) {
-        alert("¡Documento subido y asegurado en MinIO con éxito!");
+        alert("¡Documento subido con éxito!");
         setIsModalOpen(false);
         setArchivoSubir(null);
         setCondominioSubir('');
         
         if (condominioActivo === condominioSubir) {
-          const refresh = await fetch(`/api/bff/documentos/condominio/${condominioActivo}`);
-          setDocumentos(await refresh.json());
+           cargarDocumentos(condominioActivo);
         }
       } else {
         const errData = await res.json();
@@ -96,12 +107,26 @@ export default function Documentos() {
     }
   };
 
+  // --- EXTRACCIÓN DE CARPETAS DESDE MINIO ---
+  const extraerCarpetas = () => {
+    const carpetasSet = new Set();
+    comprobantes.forEach(doc => {
+      const partes = doc.keyMinio.split('/');
+      if (partes.length >= 3) {
+        carpetasSet.add(partes[2]);
+      }
+    });
+    return Array.from(carpetasSet).sort((a, b) => b.localeCompare(a));
+  };
+
+  const carpetasDisponibles = extraerCarpetas();
+  const comprobantesFiltrados = comprobantes.filter(doc => doc.keyMinio.includes(`/${carpetaActiva}/`));
+
   return (
     <div className="finanzas-page-container">
       <div className="finanzas-header-row">
         <h1 className="finanzas-main-title">Bóveda de Documentos</h1>
         
-        {/* Selector de condominio para ver la tabla */}
         <div className="period-selector-card">
           <label>Filtrar por Condominio:</label>
           <select 
@@ -122,16 +147,17 @@ export default function Documentos() {
         </button>
       </div>
 
+      {/* --- TABLA 1: DOCUMENTOS GENERALES --- */}
       <div className="finanzas-dashboard-card table-card">
-        <h3 className="card-section-title">Archivos Registrados</h3>
+        <h3 className="card-section-title">Documentos Generales</h3>
         <p className="card-section-subtitle">Visualiza y descarga contratos, reglamentos y actas de asambleas.</p>
 
         {!condominioActivo ? (
-          <div className="table-empty-fallback">Selecciona un condominio en la parte superior para cargar sus documentos.</div>
+          <div className="table-empty-fallback">Selecciona un condominio en la parte superior.</div>
         ) : loading ? (
           <div className="table-loading-spinner">Desencriptando archivos desde MinIO...</div>
-        ) : documentos.length === 0 ? (
-          <div className="table-empty-fallback">No hay documentos registrados para este condominio.</div>
+        ) : docsGenerales.length === 0 ? (
+          <div className="table-empty-fallback">No hay documentos generales registrados.</div>
         ) : (
           <div className="finanzas-table-responsive">
             <table className="finanzas-data-table">
@@ -143,15 +169,12 @@ export default function Documentos() {
                 </tr>
               </thead>
               <tbody>
-                {documentos.map((doc) => (
+                {docsGenerales.map((doc) => (
                   <tr key={doc.id}>
                     <td className="fw-bold">{doc.nombreOriginal}</td>
                     <td>{new Date(doc.fechaSubida).toLocaleString('es-CL')}</td>
                     <td>
-                      <button 
-                        className="btn-table-action btn-pay-now" 
-                        onClick={() => handleDownload(doc.id)}
-                      >
+                      <button className="btn-table-action btn-pay-now" onClick={() => handleDownload(doc.id)}>
                         ↓ Descargar
                       </button>
                     </td>
@@ -163,7 +186,77 @@ export default function Documentos() {
         )}
       </div>
 
-      {/* --- MODAL DE SUBIDA --- */}
+      {/* --- SECCIÓN 2: CARPETAS DE COMPROBANTES --- */}
+      <div className="finanzas-dashboard-card table-card" style={{ marginTop: '20px' }}>
+        <h3 className="card-section-title">Comprobantes de Pago</h3>
+        <p className="card-section-subtitle">Explora los respaldos financieros organizados por periodo mensual.</p>
+
+        {!condominioActivo ? (
+          <div className="table-empty-fallback">Selecciona un condominio en la parte superior.</div>
+        ) : loading ? (
+          <div className="table-loading-spinner">Buscando comprobantes financieros...</div>
+        ) : comprobantes.length === 0 ? (
+          <div className="table-empty-fallback">No hay comprobantes de pago asociados a este condominio.</div>
+        ) : carpetaActiva === null ? (
+          
+          /* VISTA DE CARPETAS */
+          <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap', marginTop: '20px', padding: '10px' }}>
+            {carpetasDisponibles.map(carpeta => (
+              <div 
+                key={carpeta}
+                onClick={() => setCarpetaActiva(carpeta)}
+                style={{
+                  background: '#f7fafc', border: '1px solid #e2e8f0', borderRadius: '8px', 
+                  padding: '20px', width: '180px', textAlign: 'center', cursor: 'pointer',
+                  transition: 'transform 0.2s', boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+                }}
+                onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+                onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+              >
+                <div style={{ fontSize: '40px', marginBottom: '10px' }}>📁</div>
+                <div style={{ fontWeight: '600', color: '#2d3748' }}>Periodo {carpeta}</div>
+              </div>
+            ))}
+          </div>
+
+        ) : (
+
+          /* VISTA DE ARCHIVOS */
+          <div className="finanzas-table-responsive">
+            <button 
+              onClick={() => setCarpetaActiva(null)} 
+              className="btn-finanzas btn-finanzas-secondary"
+              style={{ marginBottom: '15px' }}
+            >
+              ⬅ Volver a Carpetas
+            </button>
+            <table className="finanzas-data-table">
+              <thead>
+                <tr>
+                  <th>Archivo (Comprobante)</th>
+                  <th>Fecha de Subida</th>
+                  <th>Operaciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {comprobantesFiltrados.map((doc) => (
+                  <tr key={doc.id}>
+                    <td className="fw-bold" style={{ color: '#2b6cb0' }}>{doc.nombreOriginal}</td>
+                    <td>{new Date(doc.fechaSubida).toLocaleString('es-CL')}</td>
+                    <td>
+                      <button className="btn-table-action btn-pay-now" onClick={() => handleDownload(doc.id)}>
+                        ↓ Descargar
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* MODAL DE SUBIDA GENERAL */}
       {isModalOpen && (
         <div className="modal-finanzas-overlay">
           <div className="modal-finanzas-box animate-pop">
@@ -197,19 +290,10 @@ export default function Documentos() {
               </div>
 
               <div className="modal-actions-row">
-                <button 
-                  type="button" 
-                  className="btn-finanzas btn-finanzas-secondary" 
-                  onClick={() => setIsModalOpen(false)}
-                  disabled={uploading}
-                >
+                <button type="button" className="btn-finanzas btn-finanzas-secondary" onClick={() => setIsModalOpen(false)} disabled={uploading}>
                   Cancelar
                 </button>
-                <button 
-                  type="submit" 
-                  className="btn-finanzas btn-finanzas-primary"
-                  disabled={uploading}
-                >
+                <button type="submit" className="btn-finanzas btn-finanzas-primary" disabled={uploading}>
                   {uploading ? 'Transfiriendo...' : 'Subir y Guardar'}
                 </button>
               </div>

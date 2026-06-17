@@ -116,4 +116,24 @@ public class ContabilidadService {
     public List<com.condominio.contabilidad.Model.ValorGastoComun> listarTarifas() {
         return valorGastoComunRepository.findAll();
     }
+
+    public CobroMensual registrarPagoConComprobante(Long idCobro, Long idDocumento) {
+        CobroMensual cobro = cobroMensualRepository.findById(idCobro)
+                .orElseThrow(() -> new RuntimeException("Cobro no encontrado"));
+        
+        cobro.setEstado(EstadoCobro.PAGADO);
+        cobro.setIdDocumento(idDocumento); // Enlazamos el comprobante
+        
+        return cobroMensualRepository.save(cobro);
+    }
+
+    public CobroMensual revertirPago(Long idCobro) {
+        CobroMensual cobro = cobroMensualRepository.findById(idCobro)
+                .orElseThrow(() -> new RuntimeException("Cobro no encontrado"));
+        
+        cobro.setEstado(EstadoCobro.PENDIENTE);
+        cobro.setIdDocumento(null); // Rompemos el enlace
+        
+        return cobroMensualRepository.save(cobro);
+    }
 }

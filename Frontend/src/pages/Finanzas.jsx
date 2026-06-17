@@ -18,6 +18,10 @@ export default function Finanzas() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [tarifaEditando, setTarifaEditando] = useState({ idTipoUnidad: '', monto: '' });
 
+  const [modalPagoOpen, setModalPagoOpen] = useState(false);
+  const [cobroSeleccionado, setCobroSeleccionado] = useState(null);
+  const [comprobanteFile, setComprobanteFile] = useState(null);
+
   useEffect(() => {
     cargarDatos();
   }, [mesActual, anioActual]);
@@ -65,19 +69,50 @@ export default function Finanzas() {
     }
   };
 
-  const marcarComoPagado = async (idCobro) => {
+  const abrirModalPago = (cobro) => {
+  setCobroSeleccionado(cobro);
+  setModalPagoOpen(true);
+};
+
+const ejecutarPagoConArchivo = async (e) => {
+  e.preventDefault();
+  if (!comprobanteFile) return alert("El archivo del comprobante es obligatorio.");
+
+  const periodo = `${mesActual}-${anioActual}`;
+  const formData = new FormData();
+  formData.append("archivo", comprobanteFile);
+  formData.append("idCondominio", cobroSeleccionado.idCondominio || 1); // fallback
+  formData.append("idUsuarioSubio", localStorage.getItem("idUsuario") || 1);
+  formData.append("periodo", periodo);
+
+  try {
+    const res = await fetch(`/api/bff/contabilidad/cobros/${cobroSeleccionado.idCobro}/pagar`, {
+      method: 'POST',
+      body: formData
+    });
+    if (res.ok) {
+      alert("Pago registrado y comprobante archivado.");
+      setModalPagoOpen(false);
+      cargarDatos(); // Recarga la grilla contable
+    }
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+  const solicitarReversion = async (cobro) => {
+    if (!window.confirm('¿Desea cambiar el estado a "Pendiente"? El comprobante se desvinculará.')) return;
+
     try {
-      const response = await fetch(`/api/bff/contabilidad/cobros/${idCobro}/estado?estado=PAGADO`, {
+      const res = await fetch(`/api/bff/contabilidad/cobros/${cobro.idCobro}/revertir`, {
         method: 'PATCH'
       });
-
-      if (response.ok) {
-        setCobros(cobros.map(c =>
-            c.idCobro === idCobro ? { ...c, estado: 'PAGADO' } : c
-        ));
+      if (res.ok) {
+        alert("Estado revertido a PENDIENTE de manera exitosa.");
+        cargarDatos(); // Sincroniza la tabla y los analytics del dashboard automáticamente
       }
-    } catch (error) {
-      console.error("Error al registrar pago:", error);
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -210,12 +245,17 @@ return (
                         </span>
                       </td>
                       <td>
-                        {cobro.estado === 'PENDIENTE' && (
-                          <button className="btn-table-action btn-pay-now" onClick={() => marcarComoPagado(cobro.idCobro)}>
-                            ✓ Marcar Pagado
-                          </button>
-                        )}
-                      </td>
+                          {cobro.estado === 'PENDIENTE' && (
+                            <button className="btn-table-action btn-pay-now" onClick={() => abrirModalPago(cobro)}>
+                              ✓ Marcar Pagado
+                            </button>
+                          )}
+                          {cobro.estado === 'PAGADO' && (
+                            <button className="btn-table-action" onClick={() => solicitarReversion(cobro)} style={{ background: '#fed7d7', color: '#9b2c2c', border: '1px solid #feb2b2' }}>
+                              ↺ Revertir a Pendiente
+                            </button>
+                          )}
+                        </td>
                     </tr>
                   ))
                 )}
@@ -225,7 +265,7 @@ return (
         )}
       </div>
 
-      {/* --- MODAL DE TARIFAS (Limpio y unificado) --- */}
+      {/* --- MODAL DE TARIFAS--- */}
       {isModalOpen && (
         <div style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
@@ -270,6 +310,43 @@ return (
                 Confirmar Tarifa
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+        {/* --- MODAL DE PAGO CON COMPROBANTE --- */}
+      {modalPagoOpen && cobroSeleccionado && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000
+        }}>
+          <div style={{ background: 'white', padding: '30px', borderRadius: '8px', width: '400px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
+            <h3 style={{ marginTop: 0 }}>Registrar Pago</h3>
+            <p style={{ fontSize: '14px', color: '#666' }}>
+              Suba el comprobante de transferencia para la Unidad {cobroSeleccionado.numeroUnidad}.
+            </p>
+
+            <form onSubmit={ejecutarPagoConArchivo}>
+              <div className="modal-form-group">
+                <label>Archivo del Comprobante:</label>
+                <input
+                  type="file"
+                  className="modal-input"
+                  onChange={(e) => setComprobanteFile(e.target.files[0])}
+                  required
+                  style={{ width: '100%', padding: '8px', marginBottom: '20px' }}
+                />
+              </div>
+
+              <div className="modal-actions-row" style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                <button type="button" className="btn-finanzas btn-finanzas-secondary" onClick={() => setModalPagoOpen(false)} style={{ padding: '8px 15px', background: '#e2e8f0', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+                  Cancelar
+                </button>
+                <button type="submit" className="btn-finanzas btn-finanzas-success" style={{ padding: '8px 15px', background: '#38a169', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+                  Subir y Pagar
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

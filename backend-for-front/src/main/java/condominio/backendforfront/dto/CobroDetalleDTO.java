@@ -10,6 +10,7 @@ public class CobroDetalleDTO {
     private Integer anio;
     private Integer monto;
     private String estado;
+    private Long idCondominio;
 
     // Datos de Registro
     private String nombreCondominio;

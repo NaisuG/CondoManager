@@ -33,4 +33,7 @@ public class CobroMensual {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private EstadoCobro estado;
+
+    @Column(name = "id_documento", nullable = true)
+    private Long idDocumento;
 }

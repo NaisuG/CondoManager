@@ -70,4 +70,16 @@ public class ContabilidadController {
     public ResponseEntity<List<com.condominio.contabilidad.Model.ValorGastoComun>> listarTarifas() {
         return ResponseEntity.ok(service.listarTarifas());
     }
+    
+    @PatchMapping("/cobros/{idCobro}/registrar-pago")
+    public ResponseEntity<CobroMensual> registrarPagoConComprobante(
+            @PathVariable Long idCobro,
+            @RequestParam Long idDocumento) {
+        return ResponseEntity.ok(service.registrarPagoConComprobante(idCobro, idDocumento));
+    }
+
+    @PatchMapping("/cobros/{idCobro}/revertir")
+    public ResponseEntity<CobroMensual> revertirPago(@PathVariable Long idCobro) {
+        return ResponseEntity.ok(service.revertirPago(idCobro));
+    }
 }
