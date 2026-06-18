@@ -9,6 +9,7 @@ export default function Finanzas() {
   const [cobros, setCobros] = useState([]);
   const [tarifas, setTarifas] = useState([]);
   const [tiposUnidad, setTiposUnidad] = useState([]);
+  const [condominios, setCondominios] = useState([]); // <-- Agregado para el cruce de IDs
 
   // Estados de carga (UI)
   const [loading, setLoading] = useState(false);
@@ -17,6 +18,11 @@ export default function Finanzas() {
   // Estados para el Modal de Tarifas
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [tarifaEditando, setTarifaEditando] = useState({ idTipoUnidad: '', monto: '' });
+
+  // Estados para el Modal de Pago
+  const [modalPagoOpen, setModalPagoOpen] = useState(false);
+  const [cobroSeleccionado, setCobroSeleccionado] = useState(null);
+  const [comprobanteFile, setComprobanteFile] = useState(null);
 
   useEffect(() => {
     cargarDatos();
@@ -33,6 +39,10 @@ export default function Finanzas() {
 
       const resTarifas = await fetch(`/api/bff/contabilidad/tarifas`);
       if (resTarifas.ok) setTarifas(await resTarifas.json());
+
+      // Cargamos el catálogo de condominios
+      const resCondominios = await fetch(`/api/bff/registro/condominios`);
+      if (resCondominios.ok) setCondominios(await resCondominios.json());
 
     } catch (error) {
       console.error("Error cargando datos financieros:", error);
@@ -65,19 +75,84 @@ export default function Finanzas() {
     }
   };
 
-  const marcarComoPagado = async (idCobro) => {
+  const abrirModalPago = (cobro) => {
+    setCobroSeleccionado(cobro);
+    setComprobanteFile(null); // Limpiar archivo previo
+    setModalPagoOpen(true);
+  };
+
+  const ejecutarPagoConArchivo = async (e) => {
+    e.preventDefault();
+    if (!comprobanteFile) return alert("El archivo del comprobante es obligatorio.");
+
+    // 1. Rescatamos el nombre que sabemos que envía ms-registro
+    const nombreCondo = cobroSeleccionado.nombreCondominio;
+
+    if (!nombreCondo || nombreCondo === 'Desconocido' || nombreCondo === 'N/A') {
+      alert("Error crítico: No se pudo identificar el nombre del condominio de esta deuda.");
+      return;
+    }
+
+    // 2. Buscamos el ID numérico en nuestro catálogo cruzando por el nombre
+    const condominioMatch = condominios.find(c => c.nombre === nombreCondo);
+    const idCondominioReal = condominioMatch ? condominioMatch.id : null;
+
+    if (!idCondominioReal) {
+      alert(`Error interno: No se pudo resolver el ID para el condominio "${nombreCondo}".`);
+      return;
+    }
+
+    // 3. Formateamos el texto para que sea una carpeta válida en MinIO
+    const folderName = nombreCondo.toLowerCase().replace(/\s+/g, '-');
+    const periodo = `${mesActual}-${anioActual}`;
+
+    // 4. Armamos el envío: El número para Postgres y el Texto para MinIO
+    const formData = new FormData();
+    formData.append("archivo", comprobanteFile);
+    formData.append("idCondominio", idCondominioReal);
+    formData.append("nombreCarpeta", folderName);
+    formData.append("idUsuarioSubio", localStorage.getItem("idUsuario") || 1);
+    formData.append("periodo", periodo);
+
     try {
-      const response = await fetch(`/api/bff/contabilidad/cobros/${idCobro}/estado?estado=PAGADO`, {
+      const res = await fetch(`/api/bff/contabilidad/cobros/${cobroSeleccionado.idCobro}/pagar`, {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (res.ok) {
+        alert("Pago registrado y comprobante archivado correctamente.");
+        setModalPagoOpen(false);
+        cargarDatos(); 
+      } else if (res.status === 413) {
+        alert("El archivo es demasiado pesado. El tamaño máximo permitido es de 15MB.");
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        alert(`Error al registrar el pago: ${errData.error || "Error del servidor"}`);
+      }
+    } catch (err) {
+      console.error("Error en la subida:", err);
+      if (err.message.includes('Failed to fetch') || err.message === 'Network Error') {
+        alert("Error de conexión: El archivo excede el límite permitido o se perdió la red.");
+      } else {
+        alert("Ocurrió un error inesperado al subir el archivo.");
+      }
+    }
+  };
+
+  const solicitarReversion = async (cobro) => {
+    if (!window.confirm('¿Desea cambiar el estado a "Pendiente"? El comprobante se desvinculará.')) return;
+
+    try {
+      const res = await fetch(`/api/bff/contabilidad/cobros/${cobro.idCobro}/revertir`, {
         method: 'PATCH'
       });
-
-      if (response.ok) {
-        setCobros(cobros.map(c =>
-            c.idCobro === idCobro ? { ...c, estado: 'PAGADO' } : c
-        ));
+      if (res.ok) {
+        alert("Estado revertido a PENDIENTE de manera exitosa.");
+        cargarDatos(); 
       }
-    } catch (error) {
-      console.error("Error al registrar pago:", error);
+    } catch (err) {
+      console.error("Error en reversión:", err);
     }
   };
 
@@ -116,7 +191,7 @@ export default function Finanzas() {
     }
   };
 
-return (
+  return (
     <div className="finanzas-container">
       <div className="page-title">Gestión de Finanzas y Cobros</div>
 
@@ -126,14 +201,11 @@ return (
         <p className="tarifas-section-subtitle">Configura el valor a cobrar por cada tipo de unidad antes de generar las boletas.</p>
 
         <div className="tarifas-chips-row">
-
           {tiposUnidad.length === 0 ? (
             <span className="tarifas-loading-placeholder">Cargando tipos de unidad...</span>
           ) : (
             tiposUnidad.map((tipo) => {
-              // Buscamos si el microservicio nos mandó una tarifa para este tipo
               const tarifaEncontrada = tarifas.find(t => t.idTipoUnidad === tipo.id);
-              // Si no hay, le ponemos 0
               const montoMostrar = tarifaEncontrada ? tarifaEncontrada.monto : 0;
 
               return (
@@ -211,8 +283,13 @@ return (
                       </td>
                       <td>
                         {cobro.estado === 'PENDIENTE' && (
-                          <button className="btn-table-action btn-pay-now" onClick={() => marcarComoPagado(cobro.idCobro)}>
+                          <button className="btn-table-action btn-pay-now" onClick={() => abrirModalPago(cobro)}>
                             ✓ Marcar Pagado
+                          </button>
+                        )}
+                        {cobro.estado === 'PAGADO' && (
+                          <button className="btn-table-action" onClick={() => solicitarReversion(cobro)} style={{ background: '#fed7d7', color: '#9b2c2c', border: '1px solid #feb2b2' }}>
+                            ↺ Revertir a Pendiente
                           </button>
                         )}
                       </td>
@@ -225,7 +302,7 @@ return (
         )}
       </div>
 
-      {/* --- MODAL DE TARIFAS (Limpio y unificado) --- */}
+      {/* --- MODAL DE TARIFAS --- */}
       {isModalOpen && (
         <div className="modal-finanzas-overlay">
           <div className="modal-finanzas-box">
@@ -268,6 +345,40 @@ return (
           </div>
         </div>
       )}
+
+      {/* --- MODAL DE PAGO CON COMPROBANTE --- */}
+      {modalPagoOpen && cobroSeleccionado && (
+        <div className="modal-finanzas-overlay">
+          <div className="modal-finanzas-box">
+            <h3 className="modal-finanzas-title">Registrar Pago</h3>
+            <p className="modal-finanzas-text">
+              Suba el comprobante de transferencia para la Unidad {cobroSeleccionado.numeroUnidad}.
+            </p>
+
+            <form onSubmit={ejecutarPagoConArchivo}>
+              <div className="modal-form-group">
+                <label>Archivo del Comprobante:</label>
+                <input
+                  type="file"
+                  className="modal-input modal-input-spaced"
+                  onChange={(e) => setComprobanteFile(e.target.files[0])}
+                  required
+                />
+              </div>
+
+              <div className="modal-actions-row modal-actions-row-spaced">
+                <button type="button" className="btn-finanzas btn-finanzas-secondary btn-modal-cancel" onClick={() => setModalPagoOpen(false)}>
+                  Cancelar
+                </button>
+                <button type="submit" className="btn-finanzas btn-finanzas-success btn-modal-confirm">
+                  Subir y Pagar
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
