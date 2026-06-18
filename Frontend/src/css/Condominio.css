@@ -1,168 +1,347 @@
-.condo-contenedor {
-    padding: 2rem;
-    width: 100%;
+.modulo-condominio-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 30px 24px;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background-color: #f8fafc;
+    min-height: 100vh;
     box-sizing: border-box;
 }
 
-/* Barra de consulta */
-.condo-search-bar {
+.modulo-condominio-header {
+    margin-bottom: 30px;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 16px;
+}
+
+.modulo-condominio-title {
+    font-size: 26px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+}
+
+.modulo-condominio-subtitle {
+    font-size: 14.5px;
+    color: #64748b;
+    margin: 6px 0 0 0;
+    line-height: 1.5;
+}
+
+/* LAYOUT EN DOS COLUMNAS */
+.modulo-condominio-layout {
     display: flex;
-    gap: 0.75rem;
-    margin-bottom: 2rem;
-    max-width: 500px;
-    width: 100%;
+    gap: 30px;
+    align-items: flex-start;
 }
 
-.condo-input-wrapper {
-    position: relative;
+.workspace-left-panel {
     flex: 1;
-}
-
-.condo-input-icon {
-    position: absolute;
-    left: 14px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #9ca3af;
-}
-
-.condo-input-number {
-    width: 100%;
-    padding: 0.65rem 1rem 0.65rem 2.4rem;
-    border: 1px solid #e5e7eb;
-    border-radius: 9999px;
-    font-size: 0.9rem;
-    background-color: #ffffff;
-    color: #111827;
-    outline: none;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
-    transition: all 0.2s ease;
-}
-
-.condo-input-number:focus {
-    border-color: #3066be;
-    box-shadow: 0 0 0 3px rgba(48, 102, 190, 0.1);
-}
-
-/* Botón de envío corporativo */
-.condo-btn-submit {
-    padding: 0.65rem 1.5rem;
-    background-color: #0c447c;
-    color: #ffffff;
-    border: none;
-    border-radius: 9999px;
-    font-size: 0.9rem;
-    fontWeight: 600;
-    cursor: pointer;
-    box-shadow: 0 2px 4px rgba(12, 68, 124, 0.15);
-    transition: background-color 0.2s ease;
-}
-
-.condo-btn-submit:hover {
-    background-color: #3066be;
-}
-
-/* Tarjeta Principal de Resultados */
-.condo-result-card {
+    min-width: 380px;
+    max-width: 420px;
     background: #ffffff;
-    border: 1px solid #e5e7eb;
     border-radius: 12px;
-    padding: 1.5rem;
+    border: 1px solid #e2e8f0;
+    padding: 24px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
 }
 
-.condo-title {
-    fontSize: 1.25rem;
-    color: #0c447c;
-    margin-bottom: 0.5rem;
+.workspace-right-panel {
+    flex: 2;
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    padding: 30px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+    min-height: 500px;
 }
 
-.condo-subtitle {
-    fontSize: 0.85rem;
-    color: #6b7280;
-    margin-bottom: 1.5rem;
-}
-
-/* Mini-Métricas superiores */
-.condo-mini-metrics-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-    gap: 1rem;
-    margin-bottom: 2rem;
-}
-
-.condo-mini-card {
-    background: #f9fafb;
-    border: 1px solid #f3f4f6;
-    border-radius: 8px;
-    padding: 1rem;
-    text-align: center;
-}
-
-.condo-mini-value {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: #111827;
-}
-
-.condo-mini-label {
-    font-size: 0.75rem;
-    color: #6b7280;
-    margin-top: 2px;
-    font-weight: 500;
-}
-
-/* Sección de Desglose de Torres */
-.condo-section-header {
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: #4b5563;
+.panel-section-title {
+    font-size: 14px;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
-    margin-bottom: 0.75rem;
+    letter-spacing: 0.75px;
+    color: #475569;
+    font-weight: 700;
+    margin-top: 0;
+    margin-bottom: 20px;
 }
 
-.condo-torres-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 1rem;
+/* SCROLL LIST LATERAL */
+.lista-condos-scroll {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 600px;
+    overflow-y: auto;
+    padding-right: 6px;
 }
 
-.condo-torre-card {
-    background: #f9fafb;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    padding: 1rem;
-}
-
-.condo-torre-title {
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: #111827;
-    margin-bottom: 0.75rem;
-    border-bottom: 1px solid #e5e7eb;
-    padding-bottom: 0.25rem;
-}
-
-.condo-torre-count {
-    font-size: 0.75rem;
-    font-weight: 400;
-    color: #6b7280;
-}
-
-.condo-unidad-item {
+.condo-selection-card {
     display: flex;
     justify-content: space-between;
-    padding: 6px 0;
-    border-bottom: 1px dashed #e5e7eb;
-    font-size: 0.825rem;
-    color: #4b5563;
+    align-items: center;
+    padding: 16px;
+    background-color: #f8fafc;
+    border: 1px solid #f1f5f9;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.condo-unidad-number {
+.condo-selection-card:hover {
+    background-color: #f1f5f9;
+    border-color: #cbd5e1;
+    transform: translateY(-1px);
+}
+
+.condo-selection-card.card-is-active {
+    background-color: #eff6ff;
+    border-color: #2563eb;
+    box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.05);
+}
+
+.card-info-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.card-info-name {
+    font-size: 14.5px;
     font-weight: 600;
+    color: #1e293b;
 }
 
-.condo-unidad-desc {
-    color: #6b7280;
+.condo-selection-card.card-is-active .card-info-name {
+    color: #1d4ed8;
 }
+
+.card-info-address {
+    font-size: 12.5px;
+    color: #64748b;
+}
+
+.card-info-id {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 5px 9px;
+    color: #475569;
+    border-radius: 6px;
+}
+
+/* SECCIÓN DERECHA DETALLADA */
+.active-condo-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 20px;
+    margin-bottom: 24px;
+}
+
+.active-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+}
+
+.active-subtitle {
+    font-size: 13.5px;
+    color: #64748b;
+    margin-top: 4px;
+    display: inline-block;
+}
+
+.active-badge {
+    background-color: #0f172a;
+    color: #ffffff;
+    font-size: 11.5px;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 6px;
+    letter-spacing: 0.25px;
+}
+
+/* MÉTRICAS KPI */
+.metrics-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 30px;
+}
+
+.metric-item-card {
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.metric-value {
+    font-size: 22px;
+    font-weight: 700;
+    color: #1e3a8a;
+}
+
+.metric-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* ARBOL DE TORRES Y DEPARTAMENTOS */
+.structural-tree-section {
+    border-top: 1px solid #f1f5f9;
+    padding-top: 24px;
+}
+
+.tree-heading {
+    font-size: 13px;
+    font-weight: 700;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 0;
+    margin-bottom: 16px;
+}
+
+.torres-grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.torre-structure-card {
+    border: 1px solid #e2e8f0;
+    background-color: #ffffff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.01);
+}
+
+.torre-header-bar {
+    background-color: #f1f5f9;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 10px 14px;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #1e293b;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.torre-badge-count {
+    font-size: 11px;
+    background-color: #cbd5e1;
+    color: #334155;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.unidades-flex-wrapper {
+    padding: 14px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 8px;
+}
+
+.unidad-item-pill {
+    background-color: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 6px 8px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.pill-primary {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #334155;
+}
+
+.pill-secondary {
+    font-size: 10px;
+    color: #94a3b8;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ESTADOS DE CARGA / PLACEHOLDERS */
+.workspace-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+    color: #64748b;
+}
+
+.empty-state-icon {
+    font-size: 40px;
+    margin-bottom: 16px;
+    opacity: 0.6;
+}
+
+.workspace-empty-state h3 {
+    font-size: 16px;
+    color: #334155;
+    margin: 0 0 8px 0;
+}
+
+.workspace-empty-state p {
+    font-size: 13.5px;
+    max-width: 440px;
+    margin: 0;
+    line-height: 1.6;
+}
+
+.detail-loading-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+    color: #64748b;
+    font-size: 13.5px;
+}
+
+.spinner-mock {
+    width: 28px;
+    height: 28px;
+    border: 3px solid #e2e8f0;
+    border-top-color: #2563eb;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-bottom: 12px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.feedback-state {
+    padding: 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    text-align: center;
+}
+.loading-box { background-color: #eff6ff; color: #2563eb; }
+.error-box { background-color: #fef2f2; color: #dc2626; font-weight: 600; border: 1px solid #fca5a5; }
+.empty-box { background-color: #f8fafc; border: 1px dashed #cbd5e1; color: #64748b; }
+.empty-torre-text { grid-column: 1 / -1; text-align: center; font-size: 12px; color: #94a3b8; font-style: italic; padding: 10px 0; }
+.tree-empty-alert { text-align: center; color: #94a3b8; font-size: 13.5px; padding: 30px 0; }

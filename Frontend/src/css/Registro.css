@@ -1,0 +1,152 @@
+.modulo-registros-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 30px 24px;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background-color: #f8fafc;
+    min-height: 100vh;
+    box-sizing: border-box;
+}
+
+.modulo-registros-header {
+    margin-bottom: 30px;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 16px;
+}
+
+.modulo-registros-title {
+    font-size: 26px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+}
+
+.modulo-registros-subtitle {
+    font-size: 14.5px;
+    color: #64748b;
+    margin: 6px 0 0 0;
+    line-height: 1.5;
+}
+
+/* BARRA DE PESTAÑAS (TABS) */
+.registros-tabs-bar {
+    display: flex;
+    gap: 6px;
+    background-color: #f1f5f9;
+    padding: 6px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+    overflow-x: auto;
+}
+
+.reg-tab-btn {
+    flex: 1;
+    padding: 12px 10px;
+    background: none;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.reg-tab-btn:hover {
+    background-color: #e2e8f0;
+    color: #0f172a;
+}
+
+.reg-tab-btn.active {
+    background-color: #ffffff;
+    color: #2563eb;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+/* TARGETA CONTENEDORA DE FORMULARIOS */
+.registros-content-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 32px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.form-section-heading {
+    margin-top: 0;
+    margin-bottom: 24px;
+    font-size: 18px;
+    color: #1e293b;
+    font-weight: 600;
+    border-bottom: 2px solid #f8fafc;
+    padding-bottom: 14px;
+}
+
+/* GRUPOS DE ENTRADA / INPUTS */
+.reg-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 22px;
+}
+
+.reg-input-group label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+}
+
+.reg-input-group input, 
+.reg-input-group select {
+    padding: 11px 14px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #334155;
+    background-color: #ffffff;
+    outline: none;
+    width: 100%;
+    box-sizing: border-box;
+    transition: all 0.15s ease;
+}
+
+.reg-input-group input:focus, 
+.reg-input-group select:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.reg-input-group select:disabled {
+    background-color: #f8fafc;
+    color: #94a3b8;
+    cursor: not-allowed;
+    border-color: #e2e8f0;
+}
+
+/* BOTONES OPERACIONALES */
+.reg-submit-btn {
+    width: 100%;
+    padding: 13px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+    margin-top: 8px;
+    background-color: #10b981; /* Verde esmeralda para altas estructurales */
+    color: white;
+}
+
+.reg-submit-btn:hover {
+    background-color: #059669;
+}
+
+.reg-submit-btn.secondary-btn {
+    background-color: #0f172a; /* Negro institucional para cuentas de usuarios */
+}
+
+.reg-submit-btn.secondary-btn:hover {
+    background-color: #1e293b;
+}

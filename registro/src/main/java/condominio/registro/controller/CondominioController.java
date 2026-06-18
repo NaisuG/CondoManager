@@ -33,7 +33,7 @@ public class CondominioController {
         return ResponseEntity.ok(condominioService.obtenerDetallePorId(id));
     }
 
-    @PostMapping
+    @PostMapping("/crear")
     public ResponseEntity<CondominioDTO> crear(@RequestBody CondominioRequestDTO request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(condominioService.crear(request));
     }

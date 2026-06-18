@@ -32,7 +32,7 @@ public class ResidenteController {
         return ResponseEntity.ok(residenteService.obtenerPorRun(run));
     }
 
-    @PostMapping
+    @PostMapping("/crear")
     public ResponseEntity<ResidenteDTO> crear(@RequestBody ResidenteRequestDTO request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(residenteService.crear(request));
     }

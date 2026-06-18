@@ -7,7 +7,7 @@ export default function PaginaAuth({ alLoguearse, alVolverAlHome }) {
     const [password, setPassword] = useState("");
     const [nombre, setNombre] = useState("");
     const [apellido, setApellido] = useState("");
-    const [rol, setRol] = useState("ROL_USER");
+    const rol = "ROL_ADMIN";
     const [error, setError] = useState("");
     const [mensaje, setMensaje] = useState("");
 
@@ -34,17 +34,14 @@ export default function PaginaAuth({ alLoguearse, alVolverAlHome }) {
             })
             .then((data) => {
                 if (esLogin) {
-                    // 1. Guardamos el token de autenticación original
+                    // token original
                     localStorage.setItem("token_jwt", data.token);
 
-                    /* 2. CLAVE PARA EL NAVBAR: Creamos el objeto con los datos de la base de datos.
-                       Si tu backend ya devuelve nombre/apellido en el 'data', los usará directamente.
-                       Si no vienen, dejamos valores de respaldo basados en los inputs del formulario.
-                    */
                     const datosUsuario = {
-                        nombre: data.nombre || nombre || "Usuario",
-                        apellido: data.apellido || apellido || "",
-                        rol: (data.rol || rol) === "ROL_ADMIN" ? "Manager" : "Residente",
+                        idUsuario: data.idUsuario,
+                        nombre: data.nombre || "Usuario",
+                        apellido: data.apellido || "",
+                        rol: data.rol === "ROL_ADMIN" ? "Manager" : "Residente",
                         avatarUrl: data.avatarUrl || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80"
                     };
 
@@ -138,20 +135,6 @@ export default function PaginaAuth({ alLoguearse, alVolverAlHome }) {
                             required
                         />
                     </div>
-
-                    {!esLogin && (
-                        <div className="auth-group">
-                            <label className="auth-label">Rol asignado</label>
-                            <select
-                                value={rol}
-                                onChange={(e) => setRol(e.target.value)}
-                                className="auth-select"
-                            >
-                                <option value="ROL_USER">Usuario Residente / Conserje</option>
-                                <option value="ROL_ADMIN">Administrador de Copropiedad</option>
-                            </select>
-                        </div>
-                    )}
 
                     <button type="submit" className="auth-submit-btn">
                         {esLogin ? "Entrar" : "Registrarse"}

@@ -36,6 +36,12 @@ export default function Sidebar({ pageActiva, setPage, alCerrarSesion }) {
                 >
                     Documentos
                 </button>
+                <button
+                    className={`sidebar-btn ${pageActiva === 'registro' ? 'active' : ''}`}
+                    onClick={() => setPage('registro')}
+                >
+                    Registro
+                </button>
             </nav>
 
             <div className="sidebar-footer">

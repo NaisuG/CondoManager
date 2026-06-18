@@ -39,6 +39,31 @@ public class BffController {
         return bffService.listarCondominios();
     }
 
+    @PostMapping("/registro/tipos-unidad/crear")
+    public Mono<ResponseEntity<Map>> crearTipoUnidad(@RequestBody Map<String, Object> tipoUnidadDto) {
+        return bffService.crearTipoUnidad(tipoUnidadDto);
+    }
+
+    @PostMapping("/registro/torres/crear")
+    public Mono<ResponseEntity<Map>> crearTorre(@RequestBody Map<String, Object> torreDto) {
+        return bffService.crearTorre(torreDto);
+    }
+
+    @PostMapping("/registro/unidades/crear")
+    public Mono<ResponseEntity<Map>> crearUnidad(@RequestBody Map<String, Object> unidadDto) {
+        return bffService.crearUnidad(unidadDto);
+    }
+
+    @PostMapping("/registro/residentes/crear")
+    public Mono<ResponseEntity<Map>> crearResidente(@RequestBody Map<String, Object> residenteDto) {
+        return bffService.crearResidente(residenteDto);
+    }
+
+    @PostMapping("/registro/residente-unidad/asignar")
+    public Mono<ResponseEntity<Map>> unirResidenteAUnidad(@RequestParam Long idResidente, @RequestParam Long idUnidad) {
+        return bffService.unirResidenteAUnidad(idResidente, idUnidad);
+    }
+
     @GetMapping("/registro/condominio/{id}")
     public Mono<CondominioFullDTO> getCondominio(@PathVariable Long id) {
         return bffService.obtenerCondominioCompleto(id);

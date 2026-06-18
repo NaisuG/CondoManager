@@ -39,7 +39,10 @@ public class AuthService {
 
         return AuthResponseDTO.builder()
                 .idUsuario(usuario.getId()).token(token)
-                .email(usuario.getEmail()).rol(usuario.getRol().getNombreRol().name())
+                .email(usuario.getEmail())
+                .nombre(usuario.getNombre())
+                .apellido(usuario.getApellido())
+                .rol(usuario.getRol().getNombreRol().name())
                 .build();
     }
 
@@ -73,6 +76,8 @@ public class AuthService {
         return AuthResponseDTO.builder().idUsuario(usuario.getId())
                 .token(token)
                 .email(usuario.getEmail())
+                .nombre(usuario.getNombre())
+                .apellido(usuario.getApellido())
                 .rol(rol.getNombreRol().name())
                 .build();
     }

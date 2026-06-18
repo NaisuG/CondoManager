@@ -27,7 +27,7 @@ public class TipoUnidadController {
         return ResponseEntity.ok(tipoUnidadService.obtenerPorId(id));
     }
 
-    @PostMapping
+    @PostMapping("/crear")
     public ResponseEntity<TipoUnidadDTO> crear(@RequestBody TipoUnidadRequestDTO request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(tipoUnidadService.crear(request));
     }

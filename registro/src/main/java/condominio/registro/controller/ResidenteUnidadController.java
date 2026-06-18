@@ -27,7 +27,7 @@ public class ResidenteUnidadController {
         return ResponseEntity.ok(residenteUnidadService.listarPorUnidad(unidadId));
     }
 
-    @PostMapping
+    @PostMapping("/asignar")
     public ResponseEntity<ResidenteUnidadDTO> asignar(@RequestBody ResidenteUnidadRequestDTO request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(residenteUnidadService.asignar(request));
     }

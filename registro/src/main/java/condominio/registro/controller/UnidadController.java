@@ -37,7 +37,7 @@ public class UnidadController  {
         return ResponseEntity.ok(unidadService.listarPorTorre(torreId));
     }
 
-    @PostMapping
+    @PostMapping("/crear")
     public ResponseEntity<UnidadDTO> crear(@RequestBody UnidadRequestDTO request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(unidadService.crear(request));
     }

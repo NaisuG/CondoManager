@@ -38,30 +38,9 @@ export default function NavbarPrivado() {
 
   return (
       <nav className="navbar-privado">
-        {/* SECCIÓN IZQUIERDA: BUSCADOR */}
-        <div className="navbar-search-wrapper">
-          <span className="search-icon">🔍</span>
-          <input
-              type="text"
-              placeholder="Buscar departamentos, cobros..."
-              className="navbar-search-input"
-          />
-        </div>
-
-        {/* SECCIÓN DERECHA: NOTIFICACIONES Y PERFIL */}
+        {/* SECCIÓN DERECHA: PERFIL */}
         <div className="navbar-user-actions">
-          <button className="notification-btn" title="Notificaciones">
-            🔔
-            <span className="notification-badge"></span>
-          </button>
-
           <div className="user-profile-wrapper">
-            <img
-                src={usuario.avatarUrl}
-                alt="Avatar"
-                className="user-avatar"
-            />
-
             <div className="user-info-text">
             <span className="user-display-name">
               {usuario.nombre} {usuario.apellido}
@@ -70,7 +49,12 @@ export default function NavbarPrivado() {
               {usuario.rol}
             </span>
             </div>
-            <span className="profile-chevron">▼</span>
+
+            <img
+                src={usuario.avatarUrl}
+                alt="Avatar"
+                className="user-avatar"
+            />
           </div>
         </div>
       </nav>

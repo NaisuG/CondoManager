@@ -5,6 +5,7 @@ import PaginaDashboard from "./pages/Dashboard";
 import PaginaFinanzas from "./pages/Finanzas";
 import PaginaOrdenes from "./pages/Ordenes";
 import PaginaCondominio from "./pages/Condominio";
+import PaginaRegistro from "./pages/Registro";
 import Sidebar from "./components/Sidebar";
 import NavbarPrivado from "./components/NavbarPriv";
 import PaginaDocumentos from "./pages/Documentos";
@@ -63,6 +64,7 @@ export default function App() {
 
             <main className="dashboard-content">
               {page === "dashboard" && <PaginaDashboard />}
+              {page === "registro" && <PaginaRegistro />}
               {page === "finanzas" && <PaginaFinanzas />}
               {page === "ordenes" && <PaginaOrdenes />}
               {page === "condo" && <PaginaCondominio />}

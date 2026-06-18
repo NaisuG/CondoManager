@@ -63,7 +63,8 @@
     margin-bottom: 20px;
 }
 
-.card-section-title {
+.card-section-title,
+.tarifas-section-title {
     font-size: 18px;
     font-weight: 600;
     color: #1a202c;
@@ -162,6 +163,14 @@
 
 .btn-finanzas-success:hover:not(:disabled) {
     background-color: #2f855a;
+}
+
+.btn-finanzas-success.btn-finanzas-blue {
+    background-color: #3182ce;
+}
+
+.btn-finanzas-success.btn-finanzas-blue:hover:not(:disabled) {
+    background-color: #2b6cb0;
 }
 
 .btn-add-tarifa {
@@ -346,6 +355,84 @@
     justify-content: flex-end;
     gap: 10px;
     margin-top: 25px;
+}
+
+/* Sección 1: Tarifas base */
+.tarifas-section-card {
+    margin-bottom: 20px;
+    padding: 20px;
+}
+
+.tarifas-section-subtitle {
+    color: #666;
+    font-size: 14px;
+}
+
+.tarifas-chips-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-top: 15px;
+}
+
+.tarifas-loading-placeholder {
+    color: #888;
+}
+
+.tarifa-chip {
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+}
+
+/* Modal de tarifas */
+.modal-finanzas-title {
+    margin-top: 0;
+}
+
+.modal-finanzas-text {
+    font-size: 14px;
+    color: #666;
+}
+
+.modal-select-spaced {
+    width: 100%;
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    margin-bottom: 15px;
+}
+
+.modal-input-spaced {
+    width: 100%;
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    margin-bottom: 20px;
+}
+
+.modal-actions-row-spaced {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.btn-modal-cancel {
+    padding: 8px 15px;
+    background: #e2e8f0;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn-modal-confirm {
+    padding: 8px 15px;
+    background: #3182ce;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
 }
 
 @keyframes pop {

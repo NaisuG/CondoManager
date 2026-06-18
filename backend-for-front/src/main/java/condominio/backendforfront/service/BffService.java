@@ -55,6 +55,25 @@ public class BffService {
     }
 
     // --- REGISTRO ---
+    public Mono<ResponseEntity<Map>> crearCondominio(Map<String, Object> condominioDto) {
+    // Reconstruimos el mapa garantizando que las llaves sean las que el microservicio espera
+    Map<String, Object> payloadParaMicroservicio = new HashMap<>();
+    
+    // Obtenemos el ID de usuario tolerando tanto camelCase como snake_case desde el front
+    Object idUsuario = condominioDto.get("id_usuario") != null ? 
+                       condominioDto.get("id_usuario") : condominioDto.get("idUsuario");
+                       
+    payloadParaMicroservicio.put("id_usuario", idUsuario); //
+    payloadParaMicroservicio.put("nombre", condominioDto.get("nombre"));
+    payloadParaMicroservicio.put("direccion", condominioDto.get("direccion"));
+
+    return webClient.post()
+            .uri(urlRegistro + "/api/registro/condominios/crear")
+            .bodyValue(payloadParaMicroservicio) // Envia el payload limpio
+            .retrieve()
+            .toEntity(Map.class);
+    }
+
     public Flux<CondominioFullDTO> listarCondominios() {
         return webClient.get().uri(urlRegistro + "/api/condominios").retrieve().bodyToFlux(Map.class)
                 .flatMap(c -> {
@@ -62,6 +81,27 @@ public class BffService {
                     return webClient.get().uri(urlRegistro + "/api/condominios/" + id).retrieve()
                             .bodyToMono(CondominioFullDTO.class).onErrorResume(e -> Mono.empty());
                 });
+    }
+
+    public Mono<ResponseEntity<Map>> crearTipoUnidad(Map<String, Object> dto) {
+    return webClient.post().uri(urlRegistro + "/api/registro/tipos-unidad/crear").bodyValue(dto).retrieve().toEntity(Map.class);
+    }
+
+    public Mono<ResponseEntity<Map>> crearTorre(Map<String, Object> dto) {
+        return webClient.post().uri(urlRegistro + "/api/registro/torres/crear").bodyValue(dto).retrieve().toEntity(Map.class);
+    }
+
+    public Mono<ResponseEntity<Map>> crearUnidad(Map<String, Object> dto) {
+        return webClient.post().uri(urlRegistro + "/api/registro/unidades/crear").bodyValue(dto).retrieve().toEntity(Map.class);
+    }
+
+    public Mono<ResponseEntity<Map>> crearResidente(Map<String, Object> dto) {
+        return webClient.post().uri(urlRegistro + "/api/registro/residentes/crear").bodyValue(dto).retrieve().toEntity(Map.class);
+    }
+
+    public Mono<ResponseEntity<Map>> unirResidenteAUnidad(Long idResidente, Long idUnidad) {
+        return webClient.post().uri("/api/residente-unidad/asignar")
+                .retrieve().toEntity(Map.class);
     }
 
     public Mono<CondominioFullDTO> obtenerCondominioCompleto(Long id) {

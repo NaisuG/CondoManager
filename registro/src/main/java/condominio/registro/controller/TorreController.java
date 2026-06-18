@@ -32,7 +32,7 @@ public class TorreController {
         return ResponseEntity.ok(torreService.listarPorCondominio(condominioId));
     }
 
-    @PostMapping
+    @PostMapping("/crear")
     public ResponseEntity<TorreDTO> crear(@RequestBody TorreRequestDTO request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(torreService.crear(request));
     }
