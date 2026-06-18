@@ -4,31 +4,30 @@ import "../css/Registro.css";
 export default function PaginaRegistro() {
   const [activeTab, setActiveTab] = useState("condominio");
 
-
   const usuarioSesion = JSON.parse(localStorage.getItem("usuario_sesion") || "null");
   const idUsuarioActual = usuarioSesion?.idUsuario ?? null;
 
   const headersConAuth = () => {
     const headers = { "Content-Type": "application/json" };
-    const token = localStorage.getItem("token_jwt");
+    // Mantenemos el token comentado por ahora (Jugada táctica para la demo)
+    // const token = localStorage.getItem("token_jwt");
     // if (token) headers["Authorization"] = `Bearer ${token}`;
     return headers;
   };
 
-  // Catálogos cargados dinámicamente para alimentar los selectores (<select>)
+  // Catálogos cargados dinámicamente
   const [condominios, setCondominios] = useState([]);
   const [tiposUnidad, setTiposUnidad] = useState([]);
   const [torresDisponibles, setTorresDisponibles] = useState([]);
   const [condoSeleccionadoParaFiltrar, setCondoSeleccionadoParaFiltrar] = useState("");
 
-  // Estados de formularios alineados al 100% con tus RequestDTOs de Java
+  // Estados de formularios
   const [formCondo, setFormCondo] = useState({ nombre: "", direccion: "" });
   const [formTipo, setFormTipo] = useState({ nombre: "" });
   const [formTorre, setFormTorre] = useState({ condominioId: "", numero: "" });
   const [formUnidad, setFormUnidad] = useState({ torreId: "", numero: "", tipoId: "", m2: "" });
   const [formResidente, setFormResidente] = useState({ run: "", nombre: "", correo: "" });
 
-  // Sincroniza los catálogos base al cargar la consola
   useEffect(() => {
     cargarCatalogosBase();
   }, []);
@@ -45,7 +44,6 @@ export default function PaginaRegistro() {
     }
   };
 
-  // Carga reactiva de torres específicas cuando se escoge un condominio en la pestaña de Unidades
   useEffect(() => {
     if (!condoSeleccionadoParaFiltrar) {
       setTorresDisponibles([]);
@@ -57,8 +55,8 @@ export default function PaginaRegistro() {
       .catch((e) => console.error("Error al mapear subestructura de torres:", e));
   }, [condoSeleccionadoParaFiltrar]);
 
-  // POST hacia las nuevas rutas del BFF
-  const procesarEnvio = async (e, endpoint, payload, mensajeExito, limpiarFormulario) => {
+  // Función de envío mejorada con Auto-selección (Callback onSuccess)
+  const procesarEnvio = async (e, endpoint, payload, mensajeExito, onSuccessCallback) => {
     e.preventDefault();
     try {
       const response = await fetch(endpoint, {
@@ -68,9 +66,10 @@ export default function PaginaRegistro() {
       });
 
       if (response.ok) {
+        const dataDevuelta = await response.json(); // Atrapamos el objeto creado
         alert(mensajeExito);
-        limpiarFormulario();
-        await cargarCatalogosBase(); // Refresca los selectores automáticamente
+        await cargarCatalogosBase(); 
+        if (onSuccessCallback) onSuccessCallback(dataDevuelta); // Ejecutamos la limpieza/auto-selección
       } else {
         const errData = await response.json().catch(() => ({}));
         alert(`Error en validación: ${errData.error || "Operación rechazada por la base de datos."}`);
@@ -82,16 +81,13 @@ export default function PaginaRegistro() {
 
   return (
     <div className="modulo-registros-container">
-      
-      {/* HEADER COHERENTE CON CONDOMINIO.JSX */}
       <div className="modulo-registros-header">
-        <h1 className="modulo-registros-title">Consola de Alta de Activos</h1>
+        <h1 className="modulo-registros-title">Gestor de Mantenimiento de Activos</h1>
         <p className="modulo-registros-subtitle">
-          Estructura nuevos condominios, configure tipologías de inmuebles y declare la propiedad física de forma jerárquica.
+          Edite copropiedades existentes, anexe nuevas torres o asigne nuevos residentes a su estructura inmobiliaria.
         </p>
       </div>
 
-      {/* SISTEMA DE NAVEGACIÓN ENTRE FORMULARIOS */}
       <div className="registros-tabs-bar">
         <button className={`reg-tab-btn ${activeTab === "condominio" ? "active" : ""}`} onClick={() => setActiveTab("condominio")}>1. Condominio</button>
         <button className={`reg-tab-btn ${activeTab === "tipo" ? "active" : ""}`} onClick={() => setActiveTab("tipo")}>2. Tipos de Unidad</button>
@@ -100,13 +96,18 @@ export default function PaginaRegistro() {
         <button className={`reg-tab-btn ${activeTab === "residente" ? "active" : ""}`} onClick={() => setActiveTab("residente")}>5. Residentes</button>
       </div>
 
-      {/* ÁREA DE CONTENIDO */}
       <div className="registros-content-card">
         
         {/* FORMULARIO 1: CONDOMINIO */}
         {activeTab === "condominio" && (
-          <form onSubmit={(e) => procesarEnvio(e, "/api/bff/registro/condominios/crear", { ...formCondo, idUsuario: idUsuarioActual }, "¡Condominio creado de forma exitosa!", () => setFormCondo({ nombre: "", direccion: "" }))}>
-            <h3 className="form-section-heading">Crear Nueva Condominio</h3>
+          <form onSubmit={(e) => procesarEnvio(e, "/api/bff/registro/condominios/crear", { ...formCondo, idUsuario: idUsuarioActual }, "¡Condominio registrado con éxito!", 
+            (nuevoCondominio) => {
+              setFormCondo({ nombre: "", direccion: "" });
+              // AUTO-SELECCIÓN TÁCTICA
+              setCondoSeleccionadoParaFiltrar(nuevoCondominio.id); 
+            }
+          )}>
+            <h3 className="form-section-heading">Alta Inicial de Condominio</h3>
             <div className="reg-input-group">
               <label>Nombre:</label>
               <input type="text" required placeholder="Ej: Condominio Parinas II" value={formCondo.nombre} onChange={(e) => setFormCondo({ ...formCondo, nombre: e.target.value })} />
@@ -121,8 +122,10 @@ export default function PaginaRegistro() {
 
         {/* FORMULARIO 2: TIPO UNIDAD */}
         {activeTab === "tipo" && (
-          <form onSubmit={(e) => procesarEnvio(e, "/api/bff/registro/tipos-unidad/crear", formTipo, "¡Nueva Tipo de inmueble añadida correctamente!", () => setFormTipo({ nombre: "" }))}>
-            <h3 className="form-section-heading">Definir Tipo de Inmueble</h3>
+          <form onSubmit={(e) => procesarEnvio(e, "/api/bff/registro/tipos-unidad/crear", formTipo, "¡Nueva Tipología añadida al catálogo!", 
+            () => setFormTipo({ nombre: "" })
+          )}>
+            <h3 className="form-section-heading">Añadir Nueva Tipología al Catálogo</h3>
             <div className="reg-input-group">
               <label>Nombre identificatorio del Tipo:</label>
               <input type="text" required placeholder="Ej: DEPARTAMENTO TIPO C, ESTACIONAMIENTO, BODEGA" value={formTipo.nombre} onChange={(e) => setFormTipo({ nombre: e.target.value.toUpperCase() })} />
@@ -133,32 +136,49 @@ export default function PaginaRegistro() {
 
         {/* FORMULARIO 3: TORRE */}
         {activeTab === "torre" && (
-          <form onSubmit={(e) => procesarEnvio(e, "/api/bff/registro/torres/crear", { condominioId: Number(formTorre.condominioId), numero: Number(formTorre.numero) }, "🗼 ¡Bloque/Torre anexado a la copropiedad!", () => setFormTorre({ condominioId: "", numero: "" }))}>
-            <h3 className="form-section-heading">Asignar Bloque o Torre</h3>
+          <form onSubmit={(e) => procesarEnvio(e, "/api/bff/registro/torres/crear", { condominioId: Number(formTorre.condominioId), numero: Number(formTorre.numero) }, "🗼 ¡Bloque/Torre anexado a la copropiedad!", 
+            () => {
+              const idCondoEditado = formTorre.condominioId;
+              setFormTorre({ condominioId: "", numero: "" });
+              
+              // REFRESCO INSTANTÁNEO: Si tenemos ese condominio seleccionado en el Paso 4, recargamos sus torres.
+              if (condoSeleccionadoParaFiltrar == idCondoEditado) {
+                fetch(`/api/bff/registro/condominio/${idCondoEditado}`)
+                  .then((r) => r.json())
+                  .then((data) => setTorresDisponibles(data.torres || []));
+              }
+            }
+          )}>
+            <h3 className="form-section-heading">Anexar Nuevo Bloque o Torre</h3>
+            {/* ... resto de los inputs del formulario 3 quedan exactamente igual ... */}
             <div className="reg-input-group">
               <label>Condominio Destino:</label>
-              <select required value={formTorre.condominioId} onChange={(e) => setFormTorre({ ...formTorre, condominioId: e.target.value })}>
-                <option value="">-- Seleccione un condominio del catálogo --</option>
+              <select required disabled={condominios.length === 0} value={formTorre.condominioId} onChange={(e) => setFormTorre({ ...formTorre, condominioId: e.target.value })}>
+                <option value="">{condominios.length === 0 ? "⚠️ Cree un Condominio primero (Paso 1)" : "-- Seleccione un condominio --"}</option>
                 {condominios.map((c) => <option key={c.id} value={c.id}>{c.nombre}</option>)}
               </select>
             </div>
             <div className="reg-input-group">
               <label>Número identificador de la Torre:</label>
-              <input type="number" required placeholder="Ej: 4" value={formTorre.numero} onChange={(e) => setFormTorre({ ...formTorre, numero: e.target.value })} />
+              <input type="number" required disabled={condominios.length === 0} placeholder="Ej: 4" value={formTorre.numero} onChange={(e) => setFormTorre({ ...formTorre, numero: e.target.value })} />
             </div>
-            <button type="submit" className="reg-submit-btn">Anexar Torre</button>
+            <button type="submit" className="reg-submit-btn" disabled={condominios.length === 0}>
+              Anexar Torre
+            </button>
           </form>
         )}
 
         {/* FORMULARIO 4: UNIDAD */}
         {activeTab === "unidad" && (
-          <form onSubmit={(e) => procesarEnvio(e, "/api/bff/registro/unidades/crear", { torreId: Number(formUnidad.torreId), numero: Number(formUnidad.numero), tipoId: Number(formUnidad.tipoId), m2: parseFloat(formUnidad.m2) }, "🚪 ¡Unidad inmobiliaria construida!", () => setFormUnidad({ torreId: "", numero: "", tipoId: "", m2: "" }))}>
-            <h3 className="form-section-heading">Alta de Unidades Autónomas</h3>
+          <form onSubmit={(e) => procesarEnvio(e, "/api/bff/registro/unidades/crear", { torreId: Number(formUnidad.torreId), numero: Number(formUnidad.numero), tipoId: Number(formUnidad.tipoId), m2: parseFloat(formUnidad.m2) }, "🚪 ¡Unidad inmobiliaria construida!", 
+            () => setFormUnidad({ torreId: "", numero: "", tipoId: "", m2: "" })
+          )}>
+            <h3 className="form-section-heading">Alta de Nuevas Unidades Autónomas</h3>
             
             <div className="reg-input-group">
               <label>1. Filtrar por Condominio:</label>
-              <select value={condoSeleccionadoParaFiltrar} onChange={(e) => setCondoSeleccionadoParaFiltrar(e.target.value)}>
-                <option value="">-- Busque la copropiedad base --</option>
+              <select required disabled={condominios.length === 0} value={condoSeleccionadoParaFiltrar} onChange={(e) => setCondoSeleccionadoParaFiltrar(e.target.value)}>
+                <option value="">{condominios.length === 0 ? "⚠️ Sin condominios registrados" : "-- Busque la copropiedad base --"}</option>
                 {condominios.map((c) => <option key={c.id} value={c.id}>{c.nombre}</option>)}
               </select>
             </div>
@@ -166,37 +186,41 @@ export default function PaginaRegistro() {
             <div className="reg-input-group">
               <label>2. Seleccionar Bloque o Torre Asociada:</label>
               <select required disabled={torresDisponibles.length === 0} value={formUnidad.torreId} onChange={(e) => setFormUnidad({ ...formUnidad, torreId: e.target.value })}>
-                <option value="">{torresDisponibles.length === 0 ? "⚠️ Primero seleccione un condominio con torres" : "-- Seleccione el bloque destino --"}</option>
+                <option value="">{torresDisponibles.length === 0 ? "⚠️ Condominio sin torres (Vaya al Paso 3)" : "-- Seleccione el bloque destino --"}</option>
                 {torresDisponibles.map((t) => <option key={t.id} value={t.id}>Torre {t.numero}</option>)}
               </select>
             </div>
 
             <div className="reg-input-group">
-              <label>Número de Departamento / Oficina / Bodega:</label>
-              <input type="number" required placeholder="Ej: 402" value={formUnidad.numero} onChange={(e) => setFormUnidad({ ...formUnidad, numero: e.target.value })} />
-            </div>
-
-            <div className="reg-input-group">
-              <label>Clasificación / Tipo de Inmueble:</label>
-              <select required value={formUnidad.tipoId} onChange={(e) => setFormUnidad({ ...formUnidad, tipoId: e.target.value })}>
-                <option value="">-- Vincular con Tipo Unidad --</option>
+              <label>3. Clasificación / Tipo de Inmueble:</label>
+              <select required disabled={tiposUnidad.length === 0} value={formUnidad.tipoId} onChange={(e) => setFormUnidad({ ...formUnidad, tipoId: e.target.value })}>
+                <option value="">{tiposUnidad.length === 0 ? "⚠️ Cree Tipologías primero (Paso 2)" : "-- Vincular con Tipo Unidad --"}</option>
                 {tiposUnidad.map((t) => <option key={t.id} value={t.id}>{t.nombre}</option>)}
               </select>
             </div>
 
             <div className="reg-input-group">
-              <label>Superficie Útil Declarada (m²):</label>
-              <input type="number" step="0.01" required placeholder="Ej: 74.35" value={formUnidad.m2} onChange={(e) => setFormUnidad({ ...formUnidad, m2: e.target.value })} />
+              <label>Número de Departamento / Oficina / Bodega:</label>
+              <input type="number" required placeholder="Ej: 402" value={formUnidad.numero} onChange={(e) => setFormUnidad({ ...formUnidad, numero: e.target.value })} disabled={torresDisponibles.length === 0} />
             </div>
 
-            <button type="submit" className="reg-submit-btn">Dar de Alta Unidad</button>
+            <div className="reg-input-group">
+              <label>Superficie Útil Declarada (m²):</label>
+              <input type="number" step="0.01" required placeholder="Ej: 74.35" value={formUnidad.m2} onChange={(e) => setFormUnidad({ ...formUnidad, m2: e.target.value })} disabled={torresDisponibles.length === 0} />
+            </div>
+
+            <button type="submit" className="reg-submit-btn" disabled={torresDisponibles.length === 0 || tiposUnidad.length === 0}>
+              Dar de Alta Unidad
+            </button>
           </form>
         )}
 
         {/* FORMULARIO 5: RESIDENTE */}
         {activeTab === "residente" && (
-          <form onSubmit={(e) => procesarEnvio(e, "/api/bff/registro/residentes/crear", formResidente, "👤 ¡Ficha maestra de residente incorporada!", () => setFormResidente({ run: "", nombre: "", correo: "" }))}>
-            <h3 className="form-section-heading">Ficha Maestra de Copropietarios</h3>
+          <form onSubmit={(e) => procesarEnvio(e, "/api/bff/registro/residentes/crear", formResidente, "👤 ¡Ficha maestra de residente incorporada!", 
+            () => setFormResidente({ run: "", nombre: "", correo: "" })
+          )}>
+            <h3 className="form-section-heading">Incorporar Nuevo Copropietario/Arrendatario</h3>
             <div className="reg-input-group">
               <label>RUN / Identificación Nacional:</label>
               <input type="text" required placeholder="Ej: 21456789-0" value={formResidente.run} onChange={(e) => setFormResidente({ ...formResidente, run: e.target.value })} />

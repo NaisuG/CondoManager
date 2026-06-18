@@ -56,52 +56,80 @@ public class BffService {
 
     // --- REGISTRO ---
     public Mono<ResponseEntity<Map>> crearCondominio(Map<String, Object> condominioDto) {
-    // Reconstruimos el mapa garantizando que las llaves sean las que el microservicio espera
-    Map<String, Object> payloadParaMicroservicio = new HashMap<>();
-    
-    // Obtenemos el ID de usuario tolerando tanto camelCase como snake_case desde el front
-    Object idUsuario = condominioDto.get("id_usuario") != null ? 
-                       condominioDto.get("id_usuario") : condominioDto.get("idUsuario");
-                       
-    payloadParaMicroservicio.put("id_usuario", idUsuario); //
-    payloadParaMicroservicio.put("nombre", condominioDto.get("nombre"));
-    payloadParaMicroservicio.put("direccion", condominioDto.get("direccion"));
+        Map<String, Object> payload = new HashMap<>();
+        Object idUsuario = condominioDto.get("id_usuario") != null ? condominioDto.get("id_usuario") : condominioDto.get("idUsuario");
+        payload.put("idUsuario", idUsuario);
+        payload.put("nombre", condominioDto.get("nombre"));
+        payload.put("direccion", condominioDto.get("direccion"));
 
-    return webClient.post()
-            .uri(urlRegistro + "/api/registro/condominios/crear")
-            .bodyValue(payloadParaMicroservicio) // Envia el payload limpio
-            .retrieve()
-            .toEntity(Map.class);
-    }
-
-    public Flux<CondominioFullDTO> listarCondominios() {
-        return webClient.get().uri(urlRegistro + "/api/condominios").retrieve().bodyToFlux(Map.class)
-                .flatMap(c -> {
-                    Long id = Long.valueOf(c.get("id").toString());
-                    return webClient.get().uri(urlRegistro + "/api/condominios/" + id).retrieve()
-                            .bodyToMono(CondominioFullDTO.class).onErrorResume(e -> Mono.empty());
-                });
+        return webClient.post().uri(urlRegistro + "/api/condominios/crear")
+                .bodyValue(payload)
+                .retrieve()
+                .bodyToMono(Map.class) // Extrae el JSON puro, destruye headers originales
+                .map(body -> ResponseEntity.status(201).body(body)) // Arma respuesta limpia
+                .onErrorResume(org.springframework.web.reactive.function.client.WebClientResponseException.class, e -> 
+                    Mono.just(ResponseEntity.status(e.getStatusCode()).body(Map.of("error", "Validación: " + e.getResponseBodyAsString()))))
+                .onErrorResume(e -> Mono.just(ResponseEntity.status(500).body(Map.of("error", "Fallo BFF: " + e.getMessage()))));
     }
 
     public Mono<ResponseEntity<Map>> crearTipoUnidad(Map<String, Object> dto) {
-    return webClient.post().uri(urlRegistro + "/api/registro/tipos-unidad/crear").bodyValue(dto).retrieve().toEntity(Map.class);
+        return webClient.post().uri(urlRegistro + "/api/tipos-unidad/crear")
+                .bodyValue(dto)
+                .retrieve()
+                .bodyToMono(Map.class)
+                .map(body -> ResponseEntity.status(201).body(body))
+                .onErrorResume(org.springframework.web.reactive.function.client.WebClientResponseException.class, e -> 
+                    Mono.just(ResponseEntity.status(e.getStatusCode()).body(Map.of("error", "Validación: " + e.getResponseBodyAsString()))))
+                .onErrorResume(e -> Mono.just(ResponseEntity.status(500).body(Map.of("error", "Fallo BFF: " + e.getMessage()))));
     }
 
     public Mono<ResponseEntity<Map>> crearTorre(Map<String, Object> dto) {
-        return webClient.post().uri(urlRegistro + "/api/registro/torres/crear").bodyValue(dto).retrieve().toEntity(Map.class);
+        return webClient.post().uri(urlRegistro + "/api/torres/crear")
+                .bodyValue(dto)
+                .retrieve()
+                .bodyToMono(Map.class)
+                .map(body -> ResponseEntity.status(201).body(body))
+                .onErrorResume(org.springframework.web.reactive.function.client.WebClientResponseException.class, e -> 
+                    Mono.just(ResponseEntity.status(e.getStatusCode()).body(Map.of("error", "Validación: " + e.getResponseBodyAsString()))))
+                .onErrorResume(e -> Mono.just(ResponseEntity.status(500).body(Map.of("error", "Fallo BFF: " + e.getMessage()))));
     }
 
     public Mono<ResponseEntity<Map>> crearUnidad(Map<String, Object> dto) {
-        return webClient.post().uri(urlRegistro + "/api/registro/unidades/crear").bodyValue(dto).retrieve().toEntity(Map.class);
+        return webClient.post().uri(urlRegistro + "/api/unidades/crear")
+                .bodyValue(dto)
+                .retrieve()
+                .bodyToMono(Map.class)
+                .map(body -> ResponseEntity.status(201).body(body))
+                .onErrorResume(org.springframework.web.reactive.function.client.WebClientResponseException.class, e -> 
+                    Mono.just(ResponseEntity.status(e.getStatusCode()).body(Map.of("error", "Validación: " + e.getResponseBodyAsString()))))
+                .onErrorResume(e -> Mono.just(ResponseEntity.status(500).body(Map.of("error", "Fallo BFF: " + e.getMessage()))));
     }
 
     public Mono<ResponseEntity<Map>> crearResidente(Map<String, Object> dto) {
-        return webClient.post().uri(urlRegistro + "/api/registro/residentes/crear").bodyValue(dto).retrieve().toEntity(Map.class);
+        return webClient.post().uri(urlRegistro + "/api/residentes/crear")
+                .bodyValue(dto)
+                .retrieve()
+                .bodyToMono(Map.class)
+                .map(body -> ResponseEntity.status(201).body(body))
+                .onErrorResume(org.springframework.web.reactive.function.client.WebClientResponseException.class, e -> 
+                    Mono.just(ResponseEntity.status(e.getStatusCode()).body(Map.of("error", "Validación: " + e.getResponseBodyAsString()))))
+                .onErrorResume(e -> Mono.just(ResponseEntity.status(500).body(Map.of("error", "Fallo BFF: " + e.getMessage()))));
     }
 
     public Mono<ResponseEntity<Map>> unirResidenteAUnidad(Long idResidente, Long idUnidad) {
-        return webClient.post().uri("/api/residente-unidad/asignar")
-                .retrieve().toEntity(Map.class);
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("residenteId", idResidente);
+        payload.put("unidadId", idUnidad);
+        payload.put("arrienda", false);
+
+        return webClient.post().uri(urlRegistro + "/api/residente-unidad/asignar")
+                .bodyValue(payload)
+                .retrieve()
+                .bodyToMono(Map.class)
+                .map(body -> ResponseEntity.status(201).body(body))
+                .onErrorResume(org.springframework.web.reactive.function.client.WebClientResponseException.class, e -> 
+                    Mono.just(ResponseEntity.status(e.getStatusCode()).body(Map.of("error", "Validación: " + e.getResponseBodyAsString()))))
+                .onErrorResume(e -> Mono.just(ResponseEntity.status(500).body(Map.of("error", "Fallo BFF: " + e.getMessage()))));
     }
 
     public Mono<CondominioFullDTO> obtenerCondominioCompleto(Long id) {
@@ -116,6 +144,15 @@ public class BffService {
     public Flux<Map> listarTiposUnidad() {
         return webClient.get().uri(urlRegistro + "/api/tipos-unidad").retrieve().bodyToFlux(Map.class)
                 .onErrorResume(e -> Flux.empty());
+    }
+
+        public Flux<CondominioFullDTO> listarCondominios() {
+        return webClient.get().uri(urlRegistro + "/api/condominios").retrieve().bodyToFlux(Map.class)
+                .flatMap(c -> {
+                    Long id = Long.valueOf(c.get("id").toString());
+                    return webClient.get().uri(urlRegistro + "/api/condominios/" + id).retrieve()
+                            .bodyToMono(CondominioFullDTO.class).onErrorResume(e -> Mono.empty());
+                });
     }
 
     // --- MANTENIMIENTO ---
