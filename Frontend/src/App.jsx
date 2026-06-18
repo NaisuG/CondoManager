@@ -9,6 +9,7 @@ import PaginaRegistro from "./pages/Registro";
 import Sidebar from "./components/Sidebar";
 import NavbarPrivado from "./components/NavbarPriv";
 import PaginaDocumentos from "./pages/Documentos";
+import PaginaAlta from "./pages/Alta";
 import "./App.css";
 
 export default function App() {
@@ -69,6 +70,7 @@ export default function App() {
               {page === "ordenes" && <PaginaOrdenes />}
               {page === "condo" && <PaginaCondominio />}
               {page === "documentos" && <PaginaDocumentos />}
+              {page === "alta" && <PaginaAlta />}
             </main>
           </div>
         </div>

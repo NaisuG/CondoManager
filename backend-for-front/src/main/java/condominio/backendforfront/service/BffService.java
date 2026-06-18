@@ -55,6 +55,18 @@ public class BffService {
     }
 
     // --- REGISTRO ---
+    public Mono<ResponseEntity<Map>> registrarCondominioCompleto(Map<String, Object> payload) {
+        return webClient.post().uri(urlRegistro + "/api/onboarding/crear-completo")
+                .bodyValue(payload)
+                .retrieve()
+                .bodyToMono(Map.class)
+                .map(body -> ResponseEntity.status(201).body(body))
+                .onErrorResume(org.springframework.web.reactive.function.client.WebClientResponseException.class, e -> 
+                    Mono.just(ResponseEntity.status(e.getStatusCode()).body(Map.of("error", "Validación: " + e.getResponseBodyAsString()))))
+                .onErrorResume(e -> Mono.just(ResponseEntity.status(500).body(Map.of("error", "Fallo BFF: " + e.getMessage()))));
+    }
+    
+    // --- EDICION ---
     public Mono<ResponseEntity<Map>> crearCondominio(Map<String, Object> condominioDto) {
         Map<String, Object> payload = new HashMap<>();
         Object idUsuario = condominioDto.get("id_usuario") != null ? condominioDto.get("id_usuario") : condominioDto.get("idUsuario");

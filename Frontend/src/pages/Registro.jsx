@@ -2,16 +2,13 @@ import { useState, useEffect } from "react";
 import "../css/Registro.css";
 
 export default function PaginaRegistro() {
-  const [activeTab, setActiveTab] = useState("condominio");
+  const [activeTab, setActiveTab] = useState("tipo");
 
   const usuarioSesion = JSON.parse(localStorage.getItem("usuario_sesion") || "null");
   const idUsuarioActual = usuarioSesion?.idUsuario ?? null;
 
   const headersConAuth = () => {
     const headers = { "Content-Type": "application/json" };
-    // Mantenemos el token comentado por ahora (Jugada táctica para la demo)
-    // const token = localStorage.getItem("token_jwt");
-    // if (token) headers["Authorization"] = `Bearer ${token}`;
     return headers;
   };
 
@@ -89,7 +86,6 @@ export default function PaginaRegistro() {
       </div>
 
       <div className="registros-tabs-bar">
-        <button className={`reg-tab-btn ${activeTab === "condominio" ? "active" : ""}`} onClick={() => setActiveTab("condominio")}>1. Condominio</button>
         <button className={`reg-tab-btn ${activeTab === "tipo" ? "active" : ""}`} onClick={() => setActiveTab("tipo")}>2. Tipos de Unidad</button>
         <button className={`reg-tab-btn ${activeTab === "torre" ? "active" : ""}`} onClick={() => setActiveTab("torre")}>3. Torres</button>
         <button className={`reg-tab-btn ${activeTab === "unidad" ? "active" : ""}`} onClick={() => setActiveTab("unidad")}>4. Unidades</button>
@@ -97,28 +93,6 @@ export default function PaginaRegistro() {
       </div>
 
       <div className="registros-content-card">
-        
-        {/* FORMULARIO 1: CONDOMINIO */}
-        {activeTab === "condominio" && (
-          <form onSubmit={(e) => procesarEnvio(e, "/api/bff/registro/condominios/crear", { ...formCondo, idUsuario: idUsuarioActual }, "¡Condominio registrado con éxito!", 
-            (nuevoCondominio) => {
-              setFormCondo({ nombre: "", direccion: "" });
-              // AUTO-SELECCIÓN TÁCTICA
-              setCondoSeleccionadoParaFiltrar(nuevoCondominio.id); 
-            }
-          )}>
-            <h3 className="form-section-heading">Alta Inicial de Condominio</h3>
-            <div className="reg-input-group">
-              <label>Nombre:</label>
-              <input type="text" required placeholder="Ej: Condominio Parinas II" value={formCondo.nombre} onChange={(e) => setFormCondo({ ...formCondo, nombre: e.target.value })} />
-            </div>
-            <div className="reg-input-group">
-              <label>Dirección Legal:</label>
-              <input type="text" required placeholder="Ej: Av. Francisco Bilbao 2340" value={formCondo.direccion} onChange={(e) => setFormCondo({ ...formCondo, direccion: e.target.value })} />
-            </div>
-            <button type="submit" className="reg-submit-btn">Inicializar Propiedad</button>
-          </form>
-        )}
 
         {/* FORMULARIO 2: TIPO UNIDAD */}
         {activeTab === "tipo" && (

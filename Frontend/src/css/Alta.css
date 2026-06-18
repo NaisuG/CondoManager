@@ -1,0 +1,286 @@
+/* Heredamos la base del contenedor original */
+.alta-wizard-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 30px 24px;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background-color: #f8fafc;
+    min-height: 100vh;
+    box-sizing: border-box;
+}
+
+/* INDICADOR DE PASOS (STEPPER) */
+.wizard-stepper {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 32px;
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.wizard-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    position: relative;
+    color: #94a3b8;
+    font-weight: 600;
+    font-size: 13px;
+    transition: all 0.3s ease;
+}
+
+.step-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    border: 2px solid #e2e8f0;
+    transition: all 0.3s ease;
+}
+
+.wizard-step.active {
+    color: #2563eb;
+}
+
+.wizard-step.active .step-circle {
+    background-color: #eff6ff;
+    border-color: #2563eb;
+    color: #2563eb;
+}
+
+.wizard-step.completed .step-circle {
+    background-color: #10b981;
+    border-color: #10b981;
+    color: white;
+}
+
+/* ANIMACIONES */
+.fade-in {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* TIPOLOGÍAS: TAGS */
+.step-instruction {
+    font-size: 14px;
+    color: #64748b;
+    margin-bottom: 16px;
+}
+
+.tags-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 16px;
+    padding: 16px;
+    background: #f8fafc;
+    border-radius: 8px;
+    min-height: 50px;
+}
+
+.tag-pill {
+    background-color: #e0e7ff;
+    color: #4338ca;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.tag-pill button {
+    background: none;
+    border: none;
+    color: #4338ca;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 16px;
+    padding: 0;
+}
+
+.tag-pill button:hover {
+    color: #312e81;
+}
+
+/* ESTRUCTURA: TORRES Y UNIDADES */
+.btn-add-torre {
+    width: 100%;
+    padding: 12px;
+    background-color: #f1f5f9;
+    border: 2px dashed #cbd5e1;
+    border-radius: 8px;
+    color: #475569;
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 20px;
+    transition: all 0.2s ease;
+}
+
+.btn-add-torre:hover {
+    background-color: #e2e8f0;
+    border-color: #94a3b8;
+    color: #0f172a;
+}
+
+.torre-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+    background-color: #ffffff;
+}
+
+.torre-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.torre-header h4 {
+    margin: 0;
+    color: #1e293b;
+    font-size: 16px;
+}
+
+.btn-add-unidad {
+    background-color: #eff6ff;
+    color: #2563eb;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-add-unidad:hover {
+    background-color: #dbeafe;
+}
+
+.unidad-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+    align-items: center;
+}
+
+.unidad-row input, .unidad-row select {
+    padding: 8px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 13px;
+    outline: none;
+}
+
+.unidad-row input:focus, .unidad-row select:focus {
+    border-color: #2563eb;
+}
+
+.btn-remove-unidad {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    opacity: 0.6;
+}
+
+.btn-remove-unidad:hover {
+    opacity: 1;
+}
+
+.empty-state, .empty-state-small {
+    color: #94a3b8;
+    font-size: 14px;
+    font-style: italic;
+    width: 100%;
+    text-align: center;
+}
+
+/* RESUMEN Y NAVEGACIÓN */
+.summary-box {
+    background-color: #f8fafc;
+    padding: 20px;
+    border-radius: 8px;
+    border-left: 4px solid #2563eb;
+    margin-bottom: 16px;
+}
+
+.summary-box p {
+    margin: 8px 0;
+    color: #334155;
+    font-size: 14px;
+}
+
+.warning-text {
+    font-size: 13px;
+    color: #d97706;
+    font-weight: 600;
+}
+
+.wizard-navigation {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 32px;
+    padding-top: 20px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.btn-wizard {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-wizard:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-wizard.secondary {
+    background-color: #f1f5f9;
+    color: #475569;
+}
+
+.btn-wizard.secondary:not(:disabled):hover {
+    background-color: #e2e8f0;
+}
+
+.btn-wizard.primary {
+    background-color: #2563eb;
+    color: white;
+}
+
+.btn-wizard.primary:not(:disabled):hover {
+    background-color: #1d4ed8;
+}
+
+.btn-wizard.success {
+    background-color: #10b981;
+    color: white;
+}
+
+.btn-wizard.success:not(:disabled):hover {
+    background-color: #059669;
+}

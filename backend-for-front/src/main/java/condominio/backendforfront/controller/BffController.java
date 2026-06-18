@@ -161,4 +161,9 @@ public class BffController {
     public Mono<Map> getLinkDescarga(@PathVariable Long id) {
         return bffService.obtenerLinkDescarga(id);
     }
+
+    @PostMapping("/registro/onboarding/crear-completo")
+    public Mono<ResponseEntity<Map>> registrarCondominioCompleto(@RequestBody Map<String, Object> payload) {
+        return bffService.registrarCondominioCompleto(payload);
+    }
 }
