@@ -1,5 +1,6 @@
 import { useState } from "react";
 import PaginaHome from "./pages/Home";
+import PaginaSobreNosotros from "./pages/SobreNosotros";
 import PaginaAuth from "./pages/Auth";
 import PaginaDashboard from "./pages/Dashboard";
 import PaginaFinanzas from "./pages/Finanzas";
@@ -33,6 +34,19 @@ export default function App() {
             estaLogueado={estaLogueado}
             alIrAlLogin={() => setView("auth")}
             alIrAlPanel={() => setView("panel_privado")}
+            alIrASobreNosotros={() => setView("sobre_nosotros")}
+        />
+    );
+  }
+
+  // VISTA: Sobre Nosotros (público)
+  if (view === "sobre_nosotros") {
+    return (
+        <PaginaSobreNosotros
+            estaLogueado={estaLogueado}
+            alIrAlLogin={() => setView("auth")}
+            alIrAlPanel={() => setView("panel_privado")}
+            alVolverAlHome={() => setView("home")}
         />
     );
   }

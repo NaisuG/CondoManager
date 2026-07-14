@@ -44,6 +44,13 @@
     color: #0c447c;
 }
 
+.nav-link-boton {
+    background: none;
+    border: none;
+    font-family: inherit;
+    cursor: pointer;
+}
+
 .boton-nav {
     background-color: #0c447c;
     color: #ffffff;

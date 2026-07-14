@@ -1,0 +1,239 @@
+/* ==========================================================================
+   INTRO (about-hero)
+   ========================================================================== */
+.about-hero {
+    padding: 5rem 5% 3rem 5%;
+    max-width: 900px;
+    margin: 0 auto;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+}
+
+.about-titulo {
+    font-size: 2.4rem;
+    line-height: 1.25;
+    font-weight: 800;
+    color: #111827;
+}
+
+.about-subtitulo {
+    font-size: 1.1rem;
+    color: #4b5563;
+    line-height: 1.7;
+    max-width: 700px;
+}
+
+/* ==========================================================================
+   ARQUITECTURA (about-arquitectura)
+   ========================================================================== */
+.about-arquitectura {
+    padding: 4rem 5% 5rem 5%;
+    text-align: center;
+    background: linear-gradient(145deg, #f8fafc 0%, #ffffff 100%);
+}
+
+.arquitectura-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1.25rem;
+    max-width: 1000px;
+    margin: 3rem auto 0 auto;
+}
+
+.arq-item {
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 1.75rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.arq-item:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+    border-color: #0c447c;
+}
+
+.arq-tag {
+    display: inline-block;
+    background-color: #0c447c;
+    color: #ffffff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 0.25rem 0.65rem;
+    border-radius: 999px;
+}
+
+.arq-item p {
+    font-size: 0.95rem;
+    color: #374151;
+    font-weight: 500;
+    margin: 0;
+}
+
+/* ==========================================================================
+   VALORES (reutiliza .services-section / .services-grid / .service-card de Home.css)
+   ========================================================================== */
+.about-valores {
+    background-color: #ffffff;
+}
+
+/* ==========================================================================
+   EQUIPO (about-equipo)
+   ========================================================================== */
+.about-equipo {
+    background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+}
+
+.equipo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 2rem;
+    max-width: 900px;
+    margin: 3rem auto 0 auto;
+}
+
+.equipo-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 2rem 1.5rem;
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.equipo-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+}
+
+.equipo-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background-color: #0c447c;
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.5rem;
+}
+
+.equipo-nombre {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0;
+}
+
+.equipo-rol {
+    font-size: 0.9rem;
+    color: #6b7280;
+}
+
+/* ==========================================================================
+   CONTACTO (about-contacto)
+   ========================================================================== */
+.about-contacto {
+    padding: 5rem 5%;
+    text-align: center;
+    background-color: #ffffff;
+}
+
+.contacto-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.25rem;
+    max-width: 800px;
+    margin: 3rem auto 0 auto;
+}
+
+.contacto-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    padding: 1.5rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    text-decoration: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+a.contacto-item:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+    border-color: #0c447c;
+}
+
+.contacto-label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #0c447c;
+}
+
+.contacto-valor {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #1f2937;
+}
+
+/* ==========================================================================
+   CTA FINAL (about-cta)
+   ========================================================================== */
+.about-cta {
+    padding: 5rem 5%;
+    text-align: center;
+    background: linear-gradient(135deg, #0c447c 0%, #083058 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+}
+
+.about-cta-titulo {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.about-cta-texto {
+    font-size: 1.05rem;
+    color: #dbe4f0;
+    max-width: 550px;
+    line-height: 1.6;
+}
+
+.about-cta .boton-principal {
+    background-color: #ffffff;
+    color: #0c447c;
+}
+
+.about-cta .boton-principal:hover {
+    background-color: #eef2ff;
+}
+
+/* Responsividad */
+@media (max-width: 768px) {
+    .about-titulo {
+        font-size: 1.9rem;
+    }
+    .arquitectura-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
