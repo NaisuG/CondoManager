@@ -125,7 +125,7 @@ export default function PaginaSobreNosotros({ estaLogueado, alIrAlLogin, alIrAlP
                             <span className="contacto-label">Correo</span>
                             <span className="contacto-valor">contacto@condomanager.cl</span>
                         </a>
-                        <a href="https://github.com/NaisuG/Gestion-Condominios" target="_blank" rel="noreferrer" className="contacto-item">
+                        <a href="https://github.com/NaisuG/CondoManager" target="_blank" rel="noreferrer" className="contacto-item">
                             <span className="contacto-label">Repositorio</span>
                             <span className="contacto-valor">GitHub</span>
                         </a>
